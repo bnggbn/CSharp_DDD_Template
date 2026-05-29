@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\DddStarter.Application\DddStarter.Application.csproj" />
+    <ProjectReference Include="..\DddStarter.Controller\DddStarter.Controller.csproj" />
+    <ProjectReference Include="..\DddStarter.Domain\DddStarter.Domain.csproj" />
+    <ProjectReference Include="..\DddStarter.Infrastructure\DddStarter.Infrastructure.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="8.2.0" />
+    <PackageReference Include="MediatR" Version="13.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

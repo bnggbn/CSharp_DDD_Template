@@ -1,0 +1,31 @@
+{
+  "requireAsciiPath": true,
+  "dependencyRules": [
+    {
+      "ruleId": "DEP001",
+      "pathContains": "/domain/",
+      "forbiddenNamespaces": [
+        "YourProject.Application",
+        "YourProject.Infrastructure",
+        "YourProject.Bootstrap",
+        "YourProject.Controller"
+      ]
+    }
+  ],
+  "namingRules": [
+    {
+      "ruleId": "NAME001",
+      "pathContains": "/application/contracts/",
+      "typeRegex": "\\binterface\\s+([A-Za-z0-9_]+)",
+      "requiredPrefix": "I",
+      "requiredSuffix": ""
+    },
+    {
+      "ruleId": "NAME002",
+      "pathContains": "/application/use-cases/",
+      "typeRegex": "\\bclass\\s+([A-Za-z0-9_]+)",
+      "requiredPrefix": "",
+      "requiredSuffix": "UseCase"
+    }
+  ]
+}

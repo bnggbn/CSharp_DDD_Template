@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DddStarter.Application/DddStarter.Application.csproj" />
+    <Project Path="src/DddStarter.Bootstrap/DddStarter.Bootstrap.csproj" />
+    <Project Path="src/DddStarter.Controller/DddStarter.Controller.csproj" />
+    <Project Path="src/DddStarter.Domain/DddStarter.Domain.csproj" />
+    <Project Path="src/DddStarter.Infrastructure/DddStarter.Infrastructure.csproj" />
+    <Project Path="src/GenericDddLinter/GenericDddLinter.csproj" />
+  </Folder>
+</Solution>
