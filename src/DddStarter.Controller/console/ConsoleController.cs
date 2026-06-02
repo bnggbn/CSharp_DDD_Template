@@ -1,22 +1,20 @@
-using DddStarter.Application.UseCases.Commands;
+using DddStarter.Application.Workflows;
 using DddStarter.Controller.Abstractions;
-using MediatR;
 
 namespace DddStarter.Controller.Console;
 
 public sealed class ConsoleController : IAppController
 {
-    private readonly ISender _sender;
+    private readonly MonitoringWorkflow _workflow;
 
-    public ConsoleController(ISender sender)
+    public ConsoleController(MonitoringWorkflow workflow)
     {
-        _sender = sender;
+        _workflow = workflow;
     }
 
     public async Task<int> RunAsync(string[] args, CancellationToken cancellationToken = default)
     {
-        ExecuteMonitoringCommand command = new("ConsoleController");
-        await _sender.Send(command, cancellationToken);
+        await _workflow.ExecuteAsync("ConsoleController", cancellationToken);
         return 0;
     }
 }

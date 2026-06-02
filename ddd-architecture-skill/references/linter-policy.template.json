@@ -27,5 +27,18 @@
       "requiredPrefix": "",
       "requiredSuffix": "UseCase"
     }
-  ]
+  ],
+  "cqrsCommandFileRule": {
+    "ruleId": "CQRS100",
+    "commandsPathContains": "/application/use-cases/"
+  },
+  "cqrsQueryFileRule": {
+    "ruleId": "CQRS101",
+    "queriesPathContains": "/application/use-cases/"
+  },
+  "useCaseFileRule": {
+    "ruleId": "CQRS102",
+    "enabled": true,
+    "useCasesPathContains": "/application/use-cases/"
+  }
 }

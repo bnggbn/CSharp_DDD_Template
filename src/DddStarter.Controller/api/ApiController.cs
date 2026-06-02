@@ -1,22 +1,20 @@
-using DddStarter.Application.UseCases.Commands;
+using DddStarter.Application.Workflows;
 using DddStarter.Controller.Abstractions;
-using MediatR;
 
 namespace DddStarter.Controller.Api;
 
 public sealed class ApiController : IAppController
 {
-    private readonly ISender _sender;
+    private readonly MonitoringWorkflow _workflow;
 
-    public ApiController(ISender sender)
+    public ApiController(MonitoringWorkflow workflow)
     {
-        _sender = sender;
+        _workflow = workflow;
     }
 
     public async Task<int> RunAsync(string[] args, CancellationToken cancellationToken = default)
     {
-        ExecuteMonitoringCommand command = new("ApiController");
-        await _sender.Send(command, cancellationToken);
+        await _workflow.ExecuteAsync("ApiController", cancellationToken);
         return 0;
     }
 }

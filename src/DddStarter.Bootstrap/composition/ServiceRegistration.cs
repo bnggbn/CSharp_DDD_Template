@@ -1,7 +1,8 @@
 using DddStarter.Application.Contracts.Ports;
 using DddStarter.Application.Contracts.UseCases;
-using DddStarter.Application.UseCases.Pipeline;
+using DddStarter.Application.Behaviors;
 using DddStarter.Application.UseCases;
+using DddStarter.Application.Workflows;
 using DddStarter.Application;
 using DddStarter.Controller.Abstractions;
 using DddStarter.Controller.Api;
@@ -38,6 +39,7 @@ public static class ServiceRegistration
         services.AddSingleton<IDbContextCore>(_ => new DapperDbContextCore(connectionString));
 
         services.AddSingleton<IMonitoringExecutionUseCase, MonitoringExecutionUseCase>();
+        services.AddTransient<MonitoringWorkflow>();
         RegisterMediatR(services);
         services.AddSingleton<ConsoleController>();
         services.AddSingleton<CliController>();

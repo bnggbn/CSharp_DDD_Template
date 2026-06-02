@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DddStarter.Application.UseCases.Pipeline;
+namespace DddStarter.Application.Behaviors;
 
 public sealed class RequestValidationException : Exception
 {

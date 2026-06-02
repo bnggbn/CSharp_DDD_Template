@@ -1,5 +1,33 @@
 {
   "requireAsciiPath": true,
+  "ruleDescriptions": {
+    "ASCII001": "Source file paths must be ASCII-only.",
+    "DEP001": "Domain layer must not depend on application/infrastructure/bootstrap/controller namespaces.",
+    "DEP002": "Application contracts must not depend on infrastructure/bootstrap/controller namespaces.",
+    "NAME001": "Interfaces under application contracts must start with 'I'.",
+    "NAME002": "Classes under application/use-cases must end with 'UseCase'.",
+    "VO000": "Domain value-object classes should end with 'Vo'.",
+    "INFH001": "Infrastructure helper classes should end with 'Helper'.",
+    "INFX001": "Infrastructure extension classes should end with 'Extensions'.",
+    "INFC001": "Infrastructure constants classes should end with 'Constants'.",
+    "PATH001": "Classes matching '*Monitor' must be placed under '/monitors/'.",
+    "PATH002": "Classes matching '*UseCase' must be placed under '/use-cases/'.",
+    "PATH003": "Classes matching '*Helper' must be placed under '/infrastructure/helpers/'.",
+    "PATH004": "Classes matching '*Extensions' must be placed under '/infrastructure/extensions/'.",
+    "PATH005": "Classes matching '*Constants' must be placed under '/infrastructure/constants/'.",
+    "FILE001": "File name should match the primary declared type.",
+    "MEDIATR001": "MediatR usage is forbidden in the domain layer.",
+    "MEDIATR002": "MediatR usage is forbidden in the infrastructure layer.",
+    "CFG001": "Config override assignment is restricted to approved paths.",
+    "CFG002": "Settings file write is restricted to approved paths.",
+    "CQRS100": "Command records must be nested in '*BusinessUseCase' under application/use-cases.",
+    "CQRS101": "Query records must be nested in '*BusinessUseCase' under application/use-cases.",
+    "CQRS102": "Use-case files must be '*UseCase.cs' and contain only record command/query members.",
+    "SEV001": "SetSeverity mutation is restricted to approved paths.",
+    "DIP001": "Constructor dependencies in target layers must prefer interfaces.",
+    "MOCK001": "Key interfaces must have at least one mock/fake/stub implementation.",
+    "CONST001": "Constants classes may only contain const or static readonly fields."
+  },
   "dependencyRules": [
     {
       "ruleId": "DEP001",
@@ -124,11 +152,16 @@
   },
   "cqrsCommandFileRule": {
     "ruleId": "CQRS100",
-    "commandsPathContains": "/application/use-cases/commands/"
+    "commandsPathContains": "/application/use-cases/"
   },
   "cqrsQueryFileRule": {
     "ruleId": "CQRS101",
-    "queriesPathContains": "/application/use-cases/queries/"
+    "queriesPathContains": "/application/use-cases/"
+  },
+  "useCaseFileRule": {
+    "ruleId": "CQRS102",
+    "enabled": true,
+    "useCasesPathContains": "/application/use-cases/"
   },
   "severityMutationRule": {
     "ruleId": "SEV001",

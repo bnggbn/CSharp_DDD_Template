@@ -21,14 +21,18 @@
 - `PATH003`: `*Helper` classes should stay in `infrastructure/helpers`.
 - `PATH004`: `*Extensions` classes should stay in `infrastructure/extensions`.
 - `PATH005`: `*Constants` classes should stay in `infrastructure/constants`.
-- `CQRS100`: each command file must contain exactly one `*Command` and exactly one matching `IRequestHandler<ThatCommand, ...>`.
-- `CQRS101`: each query file must contain exactly one `*Query` and exactly one matching `IRequestHandler<ThatQuery, ...>`.
+- `CQRS100`: `*Command` must be declared as `record` and nested in `*BusinessUseCase` under `application/use-cases/`.
+- `CQRS101`: `*Query` must be declared as `record` and nested in `*BusinessUseCase` under `application/use-cases/`.
+- `CQRS102`: files under `application/use-cases/` must be `*UseCase.cs`; class names must end with `UseCase`; class members must be `record *Command/*Query` only.
 
 ## Mutation Guardrails
 - `CFG001`: config override map assignment is allowed only in approved configuration paths.
 - `CFG002`: writing `appsettings.json` is allowed only in approved configuration paths.
 - `SEV001`: `SetSeverity` mutation is restricted to approved paths.
 - `CONST001`: `*Constants` classes (in configured infrastructure paths) may only contain `const` or `static readonly` fields.
+- `IMM001`: command/query records must be positional or init-only; no mutable members.
+- `IMM002`: domain entities/VOs must not expose public setters for boundary-crossing state.
+- `PURE001` (optional): handlers must not mutate inbound request records.
 
 ## Files
 - `FILE001`: filename should match primary type.

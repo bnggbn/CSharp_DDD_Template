@@ -1,7 +1,7 @@
 using DddStarter.Application.Contracts.Ports;
 using MediatR;
 
-namespace DddStarter.Application.UseCases.Pipeline;
+namespace DddStarter.Application.Behaviors;
 
 public sealed class UnhandledExceptionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull

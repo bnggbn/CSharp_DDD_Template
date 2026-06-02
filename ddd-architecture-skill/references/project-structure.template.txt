@@ -11,6 +11,10 @@ src/
       use-cases/
       runtime/
     use-cases/
+    handlers/
+    validators/
+    workflows/
+    behaviors/
     services/
   YourProject.Infrastructure/
     configuration/

@@ -11,6 +11,7 @@ internal sealed class LinterPolicy
     public ConfigMutationRule ConfigMutationRule { get; set; } = new();
     public CqrsCommandFileRule CqrsCommandFileRule { get; set; } = new();
     public CqrsQueryFileRule CqrsQueryFileRule { get; set; } = new();
+    public UseCaseFileRule UseCaseFileRule { get; set; } = new();
     public SeverityMutationRule SeverityMutationRule { get; set; } = new();
     public ConstructorInterfaceRule ConstructorInterfaceRule { get; set; } = new();
     public InterfaceMockRule InterfaceMockRule { get; set; } = new();
@@ -66,13 +67,20 @@ internal sealed class ConfigMutationRule
 internal sealed class CqrsCommandFileRule
 {
     public string RuleId { get; set; } = "CQRS100";
-    public string CommandsPathContains { get; set; } = "/application/use-cases/commands/";
+    public string CommandsPathContains { get; set; } = "/application/use-cases/";
 }
 
 internal sealed class CqrsQueryFileRule
 {
     public string RuleId { get; set; } = "CQRS101";
-    public string QueriesPathContains { get; set; } = "/application/use-cases/queries/";
+    public string QueriesPathContains { get; set; } = "/application/use-cases/";
+}
+
+internal sealed class UseCaseFileRule
+{
+    public string RuleId { get; set; } = "CQRS102";
+    public bool Enabled { get; set; } = true;
+    public string UseCasesPathContains { get; set; } = "/application/use-cases/";
 }
 
 internal sealed class SeverityMutationRule

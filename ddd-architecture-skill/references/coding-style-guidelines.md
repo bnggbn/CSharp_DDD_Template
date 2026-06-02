@@ -8,9 +8,12 @@
 - Use `Verb + Noun + Async` for repository method names.
 - Use `Verb + Noun + Command/Query` for command/query names.
 - Use `record` for commands and queries; do not use inheritance for them.
+- Place command/query records under `application/use-cases/*UseCase.cs` inside `*BusinessUseCase` containers.
 
 ## Command Dispatch Pattern
-- Create the command object first, then call `_sender.Send(command, ct)`.
+- Keep workflow dispatch-only: create request with `new` and call `_sender.Send(request, ct)`.
+- Do not place execution logic in workflow classes.
+- Put execution logic in handlers.
 
 ## Data Access Safety
 - After implementing repository logic, re-check ORM queries and avoid N+1 patterns.

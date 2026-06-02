@@ -3,7 +3,7 @@ using Autofac;
 using DddStarter.Application;
 using DddStarter.Application.Contracts.Ports;
 using DddStarter.Application.Contracts.UseCases;
-using DddStarter.Application.UseCases.Pipeline;
+using DddStarter.Application.Behaviors;
 using DddStarter.Application.UseCases;
 using DddStarter.Controller;
 using DddStarter.Domain;

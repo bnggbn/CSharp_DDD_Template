@@ -1,11 +1,11 @@
 using DddStarter.Application.Contracts.Ports;
 using DddStarter.Application.UseCases.Commands;
 
-namespace DddStarter.Application.UseCases.Validators;
+namespace DddStarter.Application.Validators;
 
-public sealed class ExecuteMonitoringCommandValidator : IRequestValidator<ExecuteMonitoringCommand>
+public sealed class MonitoringCommandValidator : IRequestValidator<MonitoringBusinessUseCase.ExecuteCommand>
 {
-    public IEnumerable<string> Validate(ExecuteMonitoringCommand request)
+    public IEnumerable<string> Validate(MonitoringBusinessUseCase.ExecuteCommand request)
     {
         if (string.IsNullOrWhiteSpace(request.TriggeredBy))
         {

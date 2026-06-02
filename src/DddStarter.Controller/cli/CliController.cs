@@ -1,24 +1,22 @@
-using DddStarter.Application.UseCases.Commands;
+using DddStarter.Application.Workflows;
 using DddStarter.Controller.Abstractions;
-using MediatR;
 
 namespace DddStarter.Controller.Cli;
 
 public sealed class CliController : IAppController
 {
-    private readonly ISender _sender;
+    private readonly MonitoringWorkflow _workflow;
 
-    public CliController(ISender sender)
+    public CliController(MonitoringWorkflow workflow)
     {
-        _sender = sender;
+        _workflow = workflow;
     }
 
     public async Task<int> RunAsync(string[] args, CancellationToken cancellationToken = default)
     {
         if (args.Length > 0 && string.Equals(args[0], "run", StringComparison.OrdinalIgnoreCase))
         {
-            ExecuteMonitoringCommand command = new("CliController");
-            await _sender.Send(command, cancellationToken);
+            await _workflow.ExecuteAsync("CliController", cancellationToken);
             return 0;
         }
 

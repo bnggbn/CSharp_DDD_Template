@@ -10,6 +10,7 @@ internal static class RoslynRuleRunner
 {
     public static void Run(LinterPolicy policy, List<string> files, List<string> issues)
     {
+        CheckUseCaseFileRules(policy, files, issues);
         CheckCqrsCommandFileRules(policy, files, issues);
         CheckCqrsQueryFileRules(policy, files, issues);
         CheckSeverityMutationRule(policy, files, issues);
@@ -17,17 +18,75 @@ internal static class RoslynRuleRunner
         CheckConstantsClassRule(policy, files, issues);
     }
 
+    private static void CheckUseCaseFileRules(LinterPolicy policy, List<string> files, List<string> issues)
+    {
+        if (!policy.UseCaseFileRule.Enabled)
+        {
+            return;
+        }
+
+        foreach (string file in files)
+        {
+            string rel = Normalize(file);
+            if (!rel.Contains(policy.UseCaseFileRule.UseCasesPathContains, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            string fileName = Path.GetFileName(file);
+            if (!fileName.EndsWith("UseCase.cs", StringComparison.Ordinal))
+            {
+                issues.Add($"[{policy.UseCaseFileRule.RuleId}] {rel}: file name must end with 'UseCase.cs'.");
+            }
+
+            string text = File.ReadAllText(file);
+            SyntaxTree tree = CSharpSyntaxTree.ParseText(text);
+            CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
+
+            List<ClassDeclarationSyntax> classes = root.DescendantNodes().OfType<ClassDeclarationSyntax>().ToList();
+            if (classes.Count == 0)
+            {
+                issues.Add($"[{policy.UseCaseFileRule.RuleId}] {rel}: use-case file must declare a '*UseCase' class.");
+                continue;
+            }
+
+            foreach (ClassDeclarationSyntax cls in classes)
+            {
+                if (!cls.Identifier.Text.EndsWith("UseCase", StringComparison.Ordinal))
+                {
+                    issues.Add($"[{policy.UseCaseFileRule.RuleId}] {rel}: class '{cls.Identifier.Text}' must end with 'UseCase'.");
+                }
+
+                foreach (MemberDeclarationSyntax member in cls.Members)
+                {
+                    if (member is not RecordDeclarationSyntax record)
+                    {
+                        issues.Add($"[{policy.UseCaseFileRule.RuleId}] {rel}: class '{cls.Identifier.Text}' may only contain record command/query definitions.");
+                        continue;
+                    }
+
+                    string recordName = record.Identifier.Text;
+                    if (!recordName.EndsWith("Command", StringComparison.Ordinal) &&
+                        !recordName.EndsWith("Query", StringComparison.Ordinal))
+                    {
+                        issues.Add($"[{policy.UseCaseFileRule.RuleId}] {rel}: record '{recordName}' must end with 'Command' or 'Query'.");
+                    }
+                }
+            }
+        }
+    }
+
     private static void CheckCqrsCommandFileRules(LinterPolicy policy, List<string> files, List<string> issues)
     {
-        ValidateRequestFileRule(files, issues, policy.CqrsCommandFileRule.RuleId, policy.CqrsCommandFileRule.CommandsPathContains, "Command");
+        ValidateRequestFileRule(files, issues, policy.CqrsCommandFileRule.RuleId, policy.CqrsCommandFileRule.CommandsPathContains, "Command", requireBusinessUseCaseContainer: true);
     }
 
     private static void CheckCqrsQueryFileRules(LinterPolicy policy, List<string> files, List<string> issues)
     {
-        ValidateRequestFileRule(files, issues, policy.CqrsQueryFileRule.RuleId, policy.CqrsQueryFileRule.QueriesPathContains, "Query");
+        ValidateRequestFileRule(files, issues, policy.CqrsQueryFileRule.RuleId, policy.CqrsQueryFileRule.QueriesPathContains, "Query", requireBusinessUseCaseContainer: true);
     }
 
-    private static void ValidateRequestFileRule(List<string> files, List<string> issues, string ruleId, string pathContains, string requestSuffix)
+    private static void ValidateRequestFileRule(List<string> files, List<string> issues, string ruleId, string pathContains, string requestSuffix, bool requireBusinessUseCaseContainer)
     {
         foreach (string file in files)
         {
@@ -42,47 +101,34 @@ internal static class RoslynRuleRunner
             CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
 
             List<TypeDeclarationSyntax> types = root.DescendantNodes().OfType<TypeDeclarationSyntax>().ToList();
-            List<string> requestTypes = types
+            List<TypeDeclarationSyntax> requestTypes = types
                 .Where(x => x.Identifier.Text.EndsWith(requestSuffix, StringComparison.Ordinal))
-                .Select(x => x.Identifier.Text)
                 .ToList();
 
-            List<(string HandlerName, string RequestName)> handlers = new();
-            foreach (TypeDeclarationSyntax type in types.Where(x => x.Identifier.Text.EndsWith("Handler", StringComparison.Ordinal)))
+            if (requestTypes.Count == 0)
             {
-                foreach (BaseTypeSyntax baseType in type.BaseList?.Types ?? Enumerable.Empty<BaseTypeSyntax>())
+                continue;
+            }
+
+            foreach (TypeDeclarationSyntax requestType in requestTypes)
+            {
+                if (requestType is not RecordDeclarationSyntax)
                 {
-                    if (baseType.Type is not GenericNameSyntax generic || generic.Identifier.Text != "IRequestHandler")
-                    {
-                        continue;
-                    }
-
-                    if (generic.TypeArgumentList.Arguments.Count < 1)
-                    {
-                        continue;
-                    }
-
-                    string requestName = generic.TypeArgumentList.Arguments[0].ToString().Split('.').Last();
-                    handlers.Add((type.Identifier.Text, requestName));
+                    issues.Add($"[{ruleId}] {rel}: '{requestType.Identifier.Text}' must be declared as record.");
                 }
-            }
 
-            if (requestTypes.Count != 1)
-            {
-                issues.Add($"[{ruleId}] {rel}: file must contain exactly one *{requestSuffix} type.");
-                continue;
-            }
+                if (requireBusinessUseCaseContainer)
+                {
+                    ClassDeclarationSyntax? parentClass = requestType.Parent as ClassDeclarationSyntax;
+                    bool isInsideBusinessUseCase =
+                        parentClass != null &&
+                        parentClass.Identifier.Text.EndsWith("BusinessUseCase", StringComparison.Ordinal);
 
-            if (handlers.Count != 1)
-            {
-                issues.Add($"[{ruleId}] {rel}: file must contain exactly one IRequestHandler for the {requestSuffix.ToLowerInvariant()}.");
-                continue;
-            }
-
-            string requestType = requestTypes[0];
-            if (!string.Equals(handlers[0].RequestName, requestType, StringComparison.Ordinal))
-            {
-                issues.Add($"[{ruleId}] {rel}: handler '{handlers[0].HandlerName}' must handle '{requestType}'.");
+                    if (!isInsideBusinessUseCase)
+                    {
+                        issues.Add($"[{ruleId}] {rel}: '{requestType.Identifier.Text}' must be nested inside '*BusinessUseCase'.");
+                    }
+                }
             }
         }
     }

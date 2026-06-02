@@ -1,15 +1,21 @@
 # DddLinterSkillKit
 
-A DDD/CQRS starter template with a policy-driven architecture linter.
+DDD/CQRS starter template with a policy-driven architecture linter.
 
-## Structure
-- `src/DddStarter.Domain`: domain entities, value objects, enums
-- `src/DddStarter.Application`: contracts and use-case implementations
-- `src/DddStarter.Infrastructure`: logging, database abstractions, repository implementations
-- `src/DddStarter.Controller`: API/CLI/Console entry controllers
-- `src/DddStarter.Bootstrap`: DI/composition and Autofac container wiring
-- `src/GenericDddLinter`: reusable linter (regex rules + Roslyn rules)
-- `ddd-architecture-linter-skill`: skill package and references
+## Why
+- Preserve dependency direction (Domain/Application depend on abstractions, not infrastructure concrete types).
+- Keep state/data flow explicit (`next = transform(current)` at boundaries).
+- Keep request flow predictable: `use-cases` defines request records, handlers execute logic, workflows dispatch.
+
+## Add One Flow (Recipe)
+1. Define request records in `src/DddStarter.Application/use-cases/*UseCase.cs`.
+2. Implement handler logic in `src/DddStarter.Application/handlers/`.
+3. Add validators in `src/DddStarter.Application/validators/` when needed.
+4. Dispatch from `src/DddStarter.Application/workflows/` via `_sender.Send(new Request(...), ct)`.
+5. Run linter and build.
+
+## Sample Slice (Clone This)
+- `docs/SAMPLE_VERTICAL_SLICE.md`
 
 ## Build
 ```powershell
@@ -21,13 +27,6 @@ dotnet build DddLinterSkillKit.slnx
 dotnet src/GenericDddLinter/bin/Debug/net10.0/GenericDddLinter.dll src src/GenericDddLinter/linter.policy.sample.json
 ```
 
-## Key Features
-- DDD-friendly layering and naming constraints
-- CQRS file-level rules (`CQRS100`, `CQRS101`)
-- Config/severity mutation guardrails
-- NLog with sanitizer abstraction before file output
-- Autofac assembly-marker scanning for registration
-
-## Notes
-- Policy can be customized in `src/GenericDddLinter/linter.policy.sample.json`.
-- Rule definitions are documented in `ddd-architecture-linter-skill/references/rule-catalog.template.md`.
+## Rule/Contract Reference
+- `docs/CONVENTIONS.md` (principle vs lint vs convention)
+- `src/GenericDddLinter/linter.policy.sample.json` (machine-enforced source of truth)
