@@ -20,6 +20,11 @@ public sealed class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
+        if (request is not IRequireValidation<TResponse>)
+        {
+            return next();
+        }
+
         string[] errors = _validators
             .SelectMany(v => v.Validate(request))
             .Where(message => !string.IsNullOrWhiteSpace(message))
