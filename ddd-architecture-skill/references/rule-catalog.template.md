@@ -1,6 +1,7 @@
 # Rule Catalog Template
 
 ## Dependency
+- `BUILD001`: lint is build-gated; repositories must compile before rule evaluation is trusted.
 - `DEP001`: domain must not depend on application/infrastructure/bootstrap/controller.
 - `DEP002`: application contracts must not depend on infrastructure/bootstrap/controller.
 - `MEDIATR001~002`: MediatR usage is limited to approved scope (application/controller allowed, domain/infrastructure forbidden).
@@ -24,6 +25,7 @@
 - `CQRS100`: `*Command` must be declared as `record` and nested in `*BusinessUseCase` under `application/use-cases/`.
 - `CQRS101`: `*Query` must be declared as `record` and nested in `*BusinessUseCase` under `application/use-cases/`.
 - `CQRS102`: files under `application/use-cases/` must be `*UseCase.cs`; class names must end with `UseCase`; class members must be `record *Command/*Query` only.
+- `CQRS103`: command/query records may only implement approved request interfaces; custom inheritance is forbidden.
 
 ## Mutation Guardrails
 - `CFG001`: config override map assignment is allowed only in approved configuration paths.
@@ -33,6 +35,12 @@
 - `IMM001`: command/query records must be positional or init-only; no mutable members.
 - `IMM002`: domain entities/VOs must not expose public setters for boundary-crossing state.
 - `PURE001` (optional): handlers must not mutate inbound request records.
+
+## Workflow and Controller Boundaries
+- `FLOW001`: workflow constructors may only depend on `ISender`.
+- `FLOW002`: workflow methods must not call injected dependencies except `_sender.Send(...)`.
+- `FLOW003`: handlers must not dispatch nested MediatR requests or depend on mediator sender/publisher abstractions.
+- `CTRL001`: controller constructors must stay in workflow/framework dependency scope.
 
 ## Files
 - `FILE001`: filename should match primary type.

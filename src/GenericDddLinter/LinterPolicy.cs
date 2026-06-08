@@ -3,6 +3,7 @@ using System.Collections.Generic;
 internal sealed class LinterPolicy
 {
     public bool RequireAsciiPath { get; set; } = true;
+    public BuildGateRule BuildGateRule { get; set; } = new();
     public List<LayerRule> DependencyRules { get; set; } = new();
     public List<NamingRule> NamingRules { get; set; } = new();
     public List<PathTypeRule> PathTypeRules { get; set; } = new();
@@ -12,10 +13,24 @@ internal sealed class LinterPolicy
     public CqrsCommandFileRule CqrsCommandFileRule { get; set; } = new();
     public CqrsQueryFileRule CqrsQueryFileRule { get; set; } = new();
     public UseCaseFileRule UseCaseFileRule { get; set; } = new();
+    public RequestImmutabilityRule RequestImmutabilityRule { get; set; } = new();
+    public CqrsInheritanceRule CqrsInheritanceRule { get; set; } = new();
+    public WorkflowConstructorRule WorkflowConstructorRule { get; set; } = new();
+    public WorkflowDispatchRule WorkflowDispatchRule { get; set; } = new();
+    public HandlerDispatchRule HandlerDispatchRule { get; set; } = new();
+    public ControllerWorkflowRule ControllerWorkflowRule { get; set; } = new();
     public SeverityMutationRule SeverityMutationRule { get; set; } = new();
     public ConstructorInterfaceRule ConstructorInterfaceRule { get; set; } = new();
     public InterfaceMockRule InterfaceMockRule { get; set; } = new();
     public ConstantsClassRule ConstantsClassRule { get; set; } = new();
+}
+
+internal sealed class BuildGateRule
+{
+    public string RuleId { get; set; } = "BUILD001";
+    public bool Enabled { get; set; } = true;
+    public List<string> SolutionSearchPatterns { get; set; } = new() { "*.slnx", "*.sln" };
+    public List<string> ExcludedProjectFileNames { get; set; } = new();
 }
 
 internal sealed class LayerRule
@@ -81,6 +96,55 @@ internal sealed class UseCaseFileRule
     public string RuleId { get; set; } = "CQRS102";
     public bool Enabled { get; set; } = true;
     public string UseCasesPathContains { get; set; } = "/application/use-cases/";
+}
+
+internal sealed class RequestImmutabilityRule
+{
+    public string RuleId { get; set; } = "IMM001";
+    public bool Enabled { get; set; } = true;
+    public string RequestsPathContains { get; set; } = "/application/use-cases/";
+}
+
+internal sealed class CqrsInheritanceRule
+{
+    public string RuleId { get; set; } = "CQRS103";
+    public bool Enabled { get; set; } = true;
+    public string RequestsPathContains { get; set; } = "/application/use-cases/";
+    public List<string> AllowedInterfaceTypeNames { get; set; } = new();
+}
+
+internal sealed class WorkflowConstructorRule
+{
+    public string RuleId { get; set; } = "FLOW001";
+    public bool Enabled { get; set; } = true;
+    public string WorkflowsPathContains { get; set; } = "/application/workflows/";
+    public List<string> AllowedDependencyTypeNames { get; set; } = new();
+}
+
+internal sealed class WorkflowDispatchRule
+{
+    public string RuleId { get; set; } = "FLOW002";
+    public bool Enabled { get; set; } = true;
+    public string WorkflowsPathContains { get; set; } = "/application/workflows/";
+    public List<string> AllowedRequestSuffixes { get; set; } = new();
+}
+
+internal sealed class HandlerDispatchRule
+{
+    public string RuleId { get; set; } = "FLOW003";
+    public bool Enabled { get; set; } = true;
+    public string HandlersPathContains { get; set; } = "/application/handlers/";
+    public List<string> ForbiddenDependencyTypeNames { get; set; } = new();
+    public List<string> ForbiddenInvocationNames { get; set; } = new();
+}
+
+internal sealed class ControllerWorkflowRule
+{
+    public string RuleId { get; set; } = "CTRL001";
+    public bool Enabled { get; set; } = true;
+    public string ControllersPathContains { get; set; } = "/controller/";
+    public List<string> AllowedDependencyTypeNames { get; set; } = new();
+    public List<string> AllowedDependencySuffixes { get; set; } = new();
 }
 
 internal sealed class SeverityMutationRule

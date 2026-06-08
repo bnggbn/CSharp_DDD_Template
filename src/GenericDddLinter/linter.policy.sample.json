@@ -1,6 +1,7 @@
 {
   "requireAsciiPath": true,
   "ruleDescriptions": {
+    "BUILD001": "Lint is build-gated: the repository must compile before rule evaluation is trusted.",
     "ASCII001": "Source file paths must be ASCII-only.",
     "DEP001": "Domain layer must not depend on application/infrastructure/bootstrap/controller namespaces.",
     "DEP002": "Application contracts must not depend on infrastructure/bootstrap/controller namespaces.",
@@ -23,6 +24,12 @@
     "CQRS100": "Command records must be nested in '*BusinessUseCase' under application/use-cases.",
     "CQRS101": "Query records must be nested in '*BusinessUseCase' under application/use-cases.",
     "CQRS102": "Use-case files must be '*UseCase.cs' and contain only record command/query members.",
+    "CQRS103": "Command/query records must not use custom inheritance; only approved request interfaces are allowed.",
+    "IMM001": "Command/query records must remain immutable: init-only properties and readonly fields only.",
+    "FLOW001": "Workflow constructors may only depend on ISender.",
+    "FLOW002": "Workflow methods may not call injected dependencies other than '_sender.Send(...)'.",
+    "FLOW003": "Handlers must not orchestrate by depending on mediator sender/publisher or dispatching nested requests.",
+    "CTRL001": "Controller constructors must stay in workflow/framework dependency scope.",
     "SEV001": "SetSeverity mutation is restricted to approved paths.",
     "DIP001": "Constructor dependencies in target layers must prefer interfaces.",
     "MOCK001": "Key interfaces must have at least one mock/fake/stub implementation.",
@@ -49,6 +56,17 @@
       ]
     }
   ],
+  "buildGateRule": {
+    "ruleId": "BUILD001",
+    "enabled": false,
+    "solutionSearchPatterns": [
+      "*.slnx",
+      "*.sln"
+    ],
+    "excludedProjectFileNames": [
+      "GenericDddLinter.csproj"
+    ]
+  },
   "namingRules": [
     {
       "ruleId": "NAME001",
@@ -163,6 +181,65 @@
     "enabled": true,
     "useCasesPathContains": "/application/use-cases/"
   },
+  "requestImmutabilityRule": {
+    "ruleId": "IMM001",
+    "enabled": true,
+    "requestsPathContains": "/application/use-cases/"
+  },
+  "cqrsInheritanceRule": {
+    "ruleId": "CQRS103",
+    "enabled": true,
+    "requestsPathContains": "/application/use-cases/",
+    "allowedInterfaceTypeNames": [
+      "IRequest",
+      "IRequireValidation"
+    ]
+  },
+  "workflowConstructorRule": {
+    "ruleId": "FLOW001",
+    "enabled": true,
+    "workflowsPathContains": "/application/workflows/",
+    "allowedDependencyTypeNames": [
+      "ISender"
+    ]
+  },
+  "workflowDispatchRule": {
+    "ruleId": "FLOW002",
+    "enabled": true,
+    "workflowsPathContains": "/application/workflows/",
+    "allowedRequestSuffixes": [
+      "Command",
+      "Query"
+    ]
+  },
+  "handlerDispatchRule": {
+    "ruleId": "FLOW003",
+    "enabled": true,
+    "handlersPathContains": "/application/handlers/",
+    "forbiddenDependencyTypeNames": [
+      "ISender",
+      "IMediator",
+      "IPublisher"
+    ],
+    "forbiddenInvocationNames": [
+      "Send",
+      "Publish"
+    ]
+  },
+  "controllerWorkflowRule": {
+    "ruleId": "CTRL001",
+    "enabled": true,
+    "controllersPathContains": "/controller/",
+    "allowedDependencyTypeNames": [
+      "IAppLogger",
+      "ILogger",
+      "IConfiguration",
+      "IServiceProvider"
+    ],
+    "allowedDependencySuffixes": [
+      "Workflow"
+    ]
+  },
   "severityMutationRule": {
     "ruleId": "SEV001",
     "targetMethodName": "SetSeverity",
@@ -176,7 +253,6 @@
     "enabled": true,
     "targetPathContains": [
       "/application/use-cases/",
-      "/controller/",
       "/bootstrap/"
     ]
   },

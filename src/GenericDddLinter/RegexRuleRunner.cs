@@ -8,7 +8,6 @@ internal static class RegexRuleRunner
 {
     public static void Run(LinterPolicy policy, List<string> files, List<string> issues)
     {
-        CheckDependencyRules(policy, files, issues);
         CheckNamingRules(policy, files, issues);
         CheckPathTypeRules(policy, files, issues);
         CheckFileNamingRule(policy, files, issues);
@@ -16,30 +15,6 @@ internal static class RegexRuleRunner
         CheckConfigMutationRules(policy, files, issues);
         CheckInterfaceMockRule(policy, files, issues);
         CheckAsciiPathRule(policy, files, issues);
-    }
-
-    private static void CheckDependencyRules(LinterPolicy policy, List<string> files, List<string> issues)
-    {
-        foreach (LayerRule rule in policy.DependencyRules)
-        {
-            foreach (string file in files)
-            {
-                string rel = Normalize(file);
-                if (!rel.Contains(rule.PathContains, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                string text = File.ReadAllText(file);
-                foreach (string forbidden in rule.ForbiddenNamespaces)
-                {
-                    if (text.Contains("using " + forbidden, StringComparison.Ordinal))
-                    {
-                        issues.Add($"[{rule.RuleId}] {rel}: must not depend on {forbidden}");
-                    }
-                }
-            }
-        }
     }
 
     private static void CheckNamingRules(LinterPolicy policy, List<string> files, List<string> issues)
@@ -50,7 +25,7 @@ internal static class RegexRuleRunner
             foreach (string file in files)
             {
                 string rel = Normalize(file);
-                if (!rel.Contains(rule.PathContains, StringComparison.OrdinalIgnoreCase))
+                if (!PathMatchesScope(rel, rule.PathContains))
                 {
                     continue;
                 }
@@ -82,7 +57,12 @@ internal static class RegexRuleRunner
                 foreach (Match match in regex.Matches(text))
                 {
                     string typeName = match.Groups[1].Value;
-                    if (!rel.Contains(rule.RequiredPathContains, StringComparison.OrdinalIgnoreCase))
+                    if (IsNestedTypeContainerFile(file, typeName))
+                    {
+                        continue;
+                    }
+
+                    if (!PathMatchesScope(rel, rule.RequiredPathContains))
                     {
                         issues.Add($"[{rule.RuleId}] {rel}: type '{typeName}' must be under '{rule.RequiredPathContains}'.");
                     }
@@ -111,7 +91,8 @@ internal static class RegexRuleRunner
 
             string declaredType = match.Groups[2].Value;
             string fileName = Path.GetFileNameWithoutExtension(file);
-            if (!string.Equals(fileName, declaredType, StringComparison.Ordinal))
+            if (!string.Equals(fileName, declaredType, StringComparison.Ordinal) &&
+                !fileName.StartsWith(declaredType + ".", StringComparison.Ordinal))
             {
                 issues.Add($"[{policy.FileNamingRule.RuleId}] {rel}: file name should match primary type '{declaredType}'.");
             }
@@ -125,7 +106,7 @@ internal static class RegexRuleRunner
             foreach (string file in files)
             {
                 string rel = Normalize(file);
-                if (!rel.Contains(rule.ForbiddenPathContains, StringComparison.OrdinalIgnoreCase))
+                if (!PathMatchesScope(rel, rule.ForbiddenPathContains))
                 {
                     continue;
                 }
@@ -172,13 +153,13 @@ internal static class RegexRuleRunner
         List<string> searchScopeFiles = files.Where(file =>
         {
             string rel = Normalize(file);
-            return policy.InterfaceMockRule.SearchPathContains.Any(path => rel.Contains(path, StringComparison.OrdinalIgnoreCase));
+            return policy.InterfaceMockRule.SearchPathContains.Any(path => PathMatchesScope(rel, path));
         }).ToList();
 
         foreach (string file in files)
         {
             string rel = Normalize(file);
-            if (!policy.InterfaceMockRule.InterfacePathContains.Any(path => rel.Contains(path, StringComparison.OrdinalIgnoreCase)))
+            if (!policy.InterfaceMockRule.InterfacePathContains.Any(path => PathMatchesScope(rel, path)))
             {
                 continue;
             }
@@ -211,7 +192,40 @@ internal static class RegexRuleRunner
 
     private static bool IsAllowed(string rel, List<string> allowedPaths)
     {
-        return allowedPaths.Any(path => rel.Contains(path, StringComparison.OrdinalIgnoreCase));
+        return allowedPaths.Any(path => PathMatchesScope(rel, path));
+    }
+
+    private static bool IsNestedTypeContainerFile(string file, string typeName)
+    {
+        string fileName = Path.GetFileNameWithoutExtension(file);
+        return fileName.Contains('.', StringComparison.Ordinal) &&
+               fileName.StartsWith(typeName + ".", StringComparison.Ordinal);
+    }
+
+    private static bool PathMatchesScope(string rel, string scope)
+    {
+        if (string.IsNullOrWhiteSpace(scope))
+        {
+            return false;
+        }
+
+        if (rel.Contains(scope, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        string normalizedScope = scope.Replace('\\', '/').Trim();
+        string mappedScope = normalizedScope switch
+        {
+            var value when value.StartsWith("/application/", StringComparison.OrdinalIgnoreCase) => ".Application/" + value["/application/".Length..],
+            var value when value.StartsWith("/domain/", StringComparison.OrdinalIgnoreCase) => ".Domain/" + value["/domain/".Length..],
+            var value when value.StartsWith("/infrastructure/", StringComparison.OrdinalIgnoreCase) => ".Infrastructure/" + value["/infrastructure/".Length..],
+            var value when value.StartsWith("/controller/", StringComparison.OrdinalIgnoreCase) => ".Controller/" + value["/controller/".Length..],
+            var value when value.StartsWith("/bootstrap/", StringComparison.OrdinalIgnoreCase) => ".Bootstrap/" + value["/bootstrap/".Length..],
+            _ => normalizedScope.TrimStart('/')
+        };
+
+        return rel.Contains(mappedScope, StringComparison.OrdinalIgnoreCase);
     }
 
     private static void CheckAsciiPathRule(LinterPolicy policy, List<string> files, List<string> issues)

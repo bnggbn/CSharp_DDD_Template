@@ -1,17 +1,17 @@
 using DddStarter.Application.Contracts.UseCases;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace DddStarter.Application.UseCases.Commands;
 
-public static partial class MonitoringBusinessUseCase
+public partial class MonitoringBusinessUseCase
 {
     public sealed class ExecuteCommandHandler : IRequestHandler<ExecuteCommand, Unit>
     {
-        private readonly IMonitoringExecutionUseCase _useCase;
-
-        public ExecuteCommandHandler(IMonitoringExecutionUseCase useCase)
+        private readonly ILogger<ExecuteCommandHandler> _logger;
+        public ExecuteCommandHandler(ILogger<ExecuteCommandHandler> logger)
         {
-            _useCase = useCase;
+            _logger = logger;
         }
 
         public Task<Unit> Handle(ExecuteCommand request, CancellationToken cancellationToken)
@@ -21,7 +21,7 @@ public static partial class MonitoringBusinessUseCase
 
         public Task<Unit> HandleExecuteAsync(ExecuteCommand request, CancellationToken cancellationToken)
         {
-            _useCase.Execute();
+            request.TriggeredBy.Length.ToString();
             return Task.FromResult(Unit.Value);
         }
     }

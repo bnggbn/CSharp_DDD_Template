@@ -6,8 +6,8 @@ This document is organized by **who guarantees the rule**.
 | Principle | Enforced By |
 |---|---|
 | Domain must not depend on infrastructure details. | `DEP001`/`DEP002` in generated lint contracts |
-| State transitions should produce next values (no boundary-crossing mutation). | Code review (machine rule optional, not default) |
-| Workflow is dispatch-only (`ISender` + `new`). | Code review + sample slice |
+| State transitions should produce next values (no boundary-crossing mutation). | `IMM001` for request contracts; code review for wider domain mutation boundaries |
+| Workflow is dispatch-only (`ISender` + `new`). | `FLOW001`/`FLOW002`/`FLOW003`/`CTRL001` + sample slice |
 
 ## Lint-Enforced Contracts (Machine-Guaranteed)
 Canonical source is policy, and this doc does not duplicate rows manually.

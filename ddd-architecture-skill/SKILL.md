@@ -1,6 +1,6 @@
 ---
 name: ddd-architecture-linter
-description: Create or evolve a reusable DDD-focused architecture linter for .NET repositories, including dependency direction rules, naming conventions, path placement rules, mutation guardrails, and policy-driven templates. Use when teams want to standardize clean architecture/DDD constraints across projects.
+description: Create or evolve a reusable DDD-focused architecture linter for .NET repositories, including dependency direction rules, naming conventions, path placement rules, mutation guardrails, workflow/controller boundaries, and policy-driven templates. Use when teams want to standardize clean architecture/DDD constraints across projects.
 ---
 
 # DDD Architecture Linter
@@ -19,8 +19,8 @@ Build and maintain a policy-driven linter for DDD architecture.
 
 - Read `references/linter-policy.template.json` when creating or updating rule configuration.
 - Read `references/rule-catalog.template.md` when aligning rule IDs, semantics, and documentation.
-- Read `references/project-structure.template.txt` when validating DDD folder boundaries and layer placement.
-- Read `references/coding-style-guidelines.md` when enforcing CQRS naming, repository method style, DTO/VO boundaries, and exception-handling behavior.
+- Read `references/project-structure.template.txt` when validating DDD folder boundaries, workflow placement, and layer placement.
+- Read `references/coding-style-guidelines.md` when enforcing CQRS naming, repository method style, DTO/VO boundaries, workflow orchestration, and exception-handling behavior.
 
 ## Rules to Prioritize
 
@@ -28,7 +28,8 @@ Build and maintain a policy-driven linter for DDD architecture.
 2. Naming constraints (`NAME*`, `VO*`)
 3. Sensitive mutation allowlist (`CFG*`, `SEV*`)
 4. Path and file constraints (`PATH*`, `FILE*`, `ASCII*`)
-5. CQRS request-handler constraints (`CQRS*`)
+5. CQRS request-handler constraints (`CQRS*`, `IMM*`)
+6. Workflow/controller orchestration constraints (`FLOW*`, `CTRL*`)
 
 ## Required Output Format
 

@@ -12,8 +12,12 @@
 
 ## Command Dispatch Pattern
 - Keep workflow dispatch-only: create request with `new` and call `_sender.Send(request, ct)`.
+- Workflow constructors should only depend on `ISender`.
 - Do not place execution logic in workflow classes.
+- Do not call injected dependencies from workflow classes except `_sender.Send(...)`.
 - Put execution logic in handlers.
+- Handlers should not dispatch nested MediatR requests.
+- Controllers should depend on workflows for application orchestration rather than handlers or repositories.
 
 ## Data Access Safety
 - After implementing repository logic, re-check ORM queries and avoid N+1 patterns.
