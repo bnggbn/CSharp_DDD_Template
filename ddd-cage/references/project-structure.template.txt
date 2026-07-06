@@ -1,0 +1,45 @@
+﻿src/
+  YourProject.Domain/
+    entities/
+    value-objects/
+    enums/
+    services/
+    monitors/
+  YourProject.Application/
+    contracts/
+      ports/
+      use-cases/
+      runtime/
+    use-cases/
+      behaviors/
+      handlers/
+      validators/
+      workflows/
+    services/
+  YourProject.Infrastructure/
+    configuration/
+    eventlog/
+    notifications/
+    security/
+    system/
+  YourProject.Bootstrap/
+    composition/
+    hosting/
+    severity-registration/
+  YourProject.Controller/
+    abstractions/
+    api/
+    cli/
+    console/
+    hosting/
+
+workflow-shape/
+  Controller
+    -> builds request
+    -> calls Workflow.RunAsync(...)
+  Workflow
+    -> owns orchestration
+    -> sends commands/queries in step order
+  Handler
+    -> executes one command only
+    -> does not orchestrate other commands
