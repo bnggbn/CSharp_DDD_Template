@@ -7,6 +7,7 @@ using DddStarter.Controller.Api;
 using DddStarter.Controller.Cli;
 using DddStarter.Controller.Console;
 using DddStarter.Domain.Services;
+using DddStarter.Infrastructure;
 using DddStarter.Infrastructure.Configuration;
 using DddStarter.Infrastructure.Configuration.Abstractions;
 using DddStarter.Infrastructure.Configuration.Rules;
@@ -33,8 +34,8 @@ public static class ServiceRegistration
     /// <returns>The same service collection for chaining.</returns>
     public static IServiceCollection AddDddStarter(this IServiceCollection services, IConfiguration configuration)
     {
-        RegisterLogging(services);
         AppSettings appSettings = RegisterConfiguration(services, configuration);
+        RegisterLogging(services, appSettings);
         RegisterPersistence(services, appSettings);
         RegisterDomainServices(services);
         ApplicationUseCaseServiceCollectionRegistration.Register(services, typeof(ApplicationAssemblyMarker).Assembly);
@@ -49,13 +50,22 @@ public static class ServiceRegistration
     /// Registers logging abstractions, sanitization rules, and the application logger.
     /// </summary>
     /// <param name="services">The target service collection.</param>
-    private static void RegisterLogging(IServiceCollection services)
+    private static void RegisterLogging(IServiceCollection services, AppSettings appSettings)
     {
         services.AddSingleton<ILogSanitizationRule, AnsiEscapeRemovalRule>();
         services.AddSingleton<ILogSanitizationRule, SafeUnicodeRule>();
         services.AddSingleton<ILogSanitizationRule, LogMessageLengthRule>();
         services.AddSingleton<ILogSanitizer, DefaultLogSanitizer>();
         services.AddSingleton<IAppLogger, NLogAppLogger>();
+
+        if (string.Equals(appSettings.ConnectionStringProvider.Kind, ConnectionStringProviderKinds.DataProtection, StringComparison.Ordinal))
+        {
+            services.AddSingleton<IConnectionStringSecretProtector, ConnectionStringSecretProtector>();
+        }
+        else
+        {
+            services.AddSingleton<IConnectionStringSecretProtector>(_ => new UnsupportedConnectionStringSecretProtector(appSettings.ConnectionStringProvider.Kind));
+        }
     }
 
     /// <summary>
@@ -95,11 +105,29 @@ public static class ServiceRegistration
     /// <param name="appSettings">The bound application settings.</param>
     private static void RegisterPersistence(IServiceCollection services, AppSettings appSettings)
     {
-        IReadOnlyDictionary<string, string> connectionStrings = AppSettingsResolver.ResolveConnectionStrings(appSettings);
-        services.AddSingleton(connectionStrings);
+        RegisterConnectionStringProvider(services, appSettings);
+        services.AddSingleton<IDbContextCore>(sp =>
+        {
+            IConnectionStringProvider connectionStringProvider = sp.GetRequiredService<IConnectionStringProvider>();
+            string connectionString = connectionStringProvider.GetRequiredConnectionString(appSettings.Database.DefaultConnectionName);
+            return new DapperDbContextCore(connectionString);
+        });
+        RepositoryServiceCollectionRegistration.Register(services, typeof(InfrastructureAssemblyMarker).Assembly);
+    }
 
-        string connectionString = connectionStrings[appSettings.Database.DefaultConnectionName];
-        services.AddSingleton<IDbContextCore>(_ => new DapperDbContextCore(connectionString));
+    private static void RegisterConnectionStringProvider(IServiceCollection services, AppSettings appSettings)
+    {
+        switch (appSettings.ConnectionStringProvider.Kind)
+        {
+            case ConnectionStringProviderKinds.DataProtection:
+                services.AddSingleton<IConnectionStringProvider, DataProtectionConnectionStringProvider>();
+                break;
+            case ConnectionStringProviderKinds.Environment:
+                services.AddSingleton<IConnectionStringProvider, EnvironmentConnectionStringProvider>();
+                break;
+            default:
+                throw new InvalidOperationException($"Unsupported AppSettings:ConnectionStringProvider:Kind '{appSettings.ConnectionStringProvider.Kind}'.");
+        }
     }
 
     /// <summary>

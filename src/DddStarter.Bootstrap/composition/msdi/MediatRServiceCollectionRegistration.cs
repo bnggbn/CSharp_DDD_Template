@@ -3,6 +3,8 @@ using DddStarter.Application.Behaviors;
 using DddStarter.Application.Contracts.Ports;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace DddStarter.Bootstrap.Composition;
 
@@ -18,6 +20,8 @@ internal static class MediatRServiceCollectionRegistration
     /// <param name="assemblies">The assemblies to scan for MediatR components.</param>
     public static void Register(IServiceCollection services, Assembly[] assemblies)
     {
+        services.AddSingleton(new MediatRServiceConfiguration());
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         services.AddSingleton<IMediator>(sp => new Mediator(sp));
         services.AddSingleton<ISender>(sp => sp.GetRequiredService<IMediator>());
         services.AddSingleton<IPublisher>(sp => sp.GetRequiredService<IMediator>());

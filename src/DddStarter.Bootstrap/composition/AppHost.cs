@@ -4,9 +4,7 @@ using DddStarter.Controller.Api;
 using DddStarter.Controller.Cli;
 using DddStarter.Controller.Console;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 
 namespace DddStarter.Bootstrap;
 
@@ -67,7 +65,8 @@ public sealed class AppHost : IAsyncDisposable
     {
         return new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+            .AddJsonFile("appsettings.sample.json", optional: false, reloadOnChange: false)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
             .AddEnvironmentVariables()
             .Build();
     }

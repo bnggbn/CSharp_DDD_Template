@@ -9,6 +9,8 @@ namespace DddStarter.Infrastructure.Configuration;
 /// </summary>
 public static class AppSettingsResolver
 {
+    public sealed record ProtectedConnectionStringResult(string SecretPath, string KeyDirectoryPath, bool ReusedExistingKeyRing);
+
     /// <summary>
     /// Binds the <c>AppSettings</c> section and validates required database secret metadata.
     /// </summary>
@@ -18,6 +20,32 @@ public static class AppSettingsResolver
     {
         AppSettings appSettings = configuration.GetSection("AppSettings").Get<AppSettings>() ?? new();
 
+        if (string.IsNullOrWhiteSpace(appSettings.Database.DefaultConnectionName))
+        {
+            throw new InvalidOperationException("AppSettings:Database:DefaultConnectionName must be provided.");
+        }
+
+        switch (appSettings.ConnectionStringProvider.Kind)
+        {
+            case ConnectionStringProviderKinds.DataProtection:
+                ValidateDataProtectionConnectionStrings(appSettings);
+                break;
+            case ConnectionStringProviderKinds.Environment:
+                if (string.IsNullOrWhiteSpace(appSettings.ConnectionStringProvider.EnvironmentVariablePrefix))
+                {
+                    throw new InvalidOperationException("AppSettings:ConnectionStringProvider:EnvironmentVariablePrefix must be provided for the Environment provider.");
+                }
+
+                break;
+            default:
+                throw new InvalidOperationException($"Unsupported AppSettings:ConnectionStringProvider:Kind '{appSettings.ConnectionStringProvider.Kind}'.");
+        }
+
+        return appSettings;
+    }
+
+    private static void ValidateDataProtectionConnectionStrings(AppSettings appSettings)
+    {
         if (appSettings.Database.EncryptedConnectionStringPaths.Count == 0)
         {
             throw new InvalidOperationException("AppSettings:Database:EncryptedConnectionStringPaths must define at least one connection.");
@@ -27,18 +55,44 @@ public static class AppSettingsResolver
         {
             throw new InvalidOperationException("AppSettings:Database:DefaultConnectionName must point to an existing encrypted connection string path.");
         }
-
-        return appSettings;
     }
 
     /// <summary>
-    /// Resolves and decrypts every configured connection string secret.
+    /// Protects a plaintext connection string and writes it to the configured secret file for the named connection.
     /// </summary>
-    /// <param name="appSettings">The application settings containing protected secret metadata.</param>
-    /// <returns>A dictionary of decrypted connection strings keyed by connection name.</returns>
-    public static IReadOnlyDictionary<string, string> ResolveConnectionStrings(AppSettings appSettings)
+    /// <param name="appSettings">The application settings containing secret path and Data Protection configuration.</param>
+    /// <param name="connectionName">The configured connection name to update.</param>
+    /// <param name="connectionString">The plaintext connection string to protect.</param>
+    /// <returns>Metadata describing the written secret file and key directory reuse.</returns>
+    public static ProtectedConnectionStringResult ProtectConnectionString(AppSettings appSettings, string connectionName, string connectionString)
     {
+        if (!appSettings.Database.EncryptedConnectionStringPaths.TryGetValue(connectionName, out string? configuredSecretPath))
+        {
+            throw new InvalidOperationException($"AppSettings:Database:EncryptedConnectionStringPaths does not define '{connectionName}'.");
+        }
+
         DataProtectionSettings protectionSettings = appSettings.DataProtection;
+        string keyDirectory = GetKeyDirectoryPath(protectionSettings);
+        bool reusedExistingKeyRing = Directory.Exists(keyDirectory) && Directory.EnumerateFileSystemEntries(keyDirectory).Any();
+        Directory.CreateDirectory(keyDirectory);
+
+        IDataProtector protector = CreateConnectionStringProtector(protectionSettings);
+        string protectedPayload = protector.Protect(connectionString);
+
+        string secretPath = GetProtectedSecretPath(configuredSecretPath, requireExists: false);
+        string? secretDirectory = Path.GetDirectoryName(secretPath);
+
+        if (!string.IsNullOrWhiteSpace(secretDirectory))
+        {
+            Directory.CreateDirectory(secretDirectory);
+        }
+
+        File.WriteAllText(secretPath, protectedPayload);
+        return new ProtectedConnectionStringResult(secretPath, keyDirectory, reusedExistingKeyRing);
+    }
+
+    public static IDataProtector CreateConnectionStringProtector(DataProtectionSettings protectionSettings)
+    {
         string keyDirectory = GetKeyDirectoryPath(protectionSettings);
         Directory.CreateDirectory(keyDirectory);
 
@@ -46,16 +100,7 @@ public static class AppSettingsResolver
             new DirectoryInfo(keyDirectory),
             builder => builder.SetApplicationName(protectionSettings.ApplicationName));
 
-        IDataProtector protector = provider.CreateProtector(protectionSettings.ConnectionStringPurpose);
-        Dictionary<string, string> resolved = new(StringComparer.OrdinalIgnoreCase);
-
-        foreach ((string connectionName, string protectedSecretPath) in appSettings.Database.EncryptedConnectionStringPaths)
-        {
-            string protectedPayload = File.ReadAllText(GetProtectedSecretPath(protectedSecretPath)).Trim();
-            resolved[connectionName] = protector.Unprotect(protectedPayload);
-        }
-
-        return resolved;
+        return provider.CreateProtector(protectionSettings.ConnectionStringPurpose);
     }
 
     /// <summary>
@@ -71,14 +116,14 @@ public static class AppSettingsResolver
                 : Path.Combine(AppContext.BaseDirectory, protectionSettings.KeyDirectory));
     }
 
-    private static string GetProtectedSecretPath(string path)
+    public static string GetProtectedSecretPath(string path, bool requireExists = true)
     {
         string resolved = Path.GetFullPath(
             Path.IsPathRooted(path)
                 ? path
                 : Path.Combine(AppContext.BaseDirectory, path));
 
-        if (!File.Exists(resolved))
+        if (requireExists && !File.Exists(resolved))
         {
             throw new FileNotFoundException("Protected connection string file was not found.", resolved);
         }

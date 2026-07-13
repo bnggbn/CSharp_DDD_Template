@@ -3,6 +3,9 @@ using Autofac;
 using DddStarter.Application.Behaviors;
 using DddStarter.Application.Contracts.Ports;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace DddStarter.Bootstrap.Composition;
 
@@ -18,6 +21,8 @@ internal static class MediatRAutofacRegistration
     /// <param name="assemblies">The assemblies to scan for MediatR components.</param>
     public static void Register(ContainerBuilder builder, Assembly[] assemblies)
     {
+        builder.RegisterInstance(new MediatRServiceConfiguration()).SingleInstance();
+        builder.RegisterInstance<ILoggerFactory>(NullLoggerFactory.Instance).SingleInstance();
         builder.Register(ctx =>
             {
                 IComponentContext componentContext = ctx.Resolve<IComponentContext>();

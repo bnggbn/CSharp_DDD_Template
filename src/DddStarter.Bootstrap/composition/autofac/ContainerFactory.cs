@@ -24,8 +24,6 @@ public static class ContainerFactory
         ContainerBuilder builder = new();
         Assembly[] assemblies = CompositionAssemblies.All;
         AppSettings appSettings = AppSettingsResolver.Bind(configuration);
-        IReadOnlyDictionary<string, string> connectionStrings = AppSettingsResolver.ResolveConnectionStrings(appSettings);
-        string connectionString = connectionStrings[appSettings.Database.DefaultConnectionName];
 
         builder.RegisterAssemblyTypes(assemblies)
             .AsImplementedInterfaces()
@@ -33,13 +31,39 @@ public static class ContainerFactory
             .InstancePerDependency();
 
         builder.RegisterInstance(appSettings).SingleInstance();
-        builder.RegisterInstance(connectionStrings).SingleInstance();
         builder.RegisterType<DefaultLogSanitizer>().As<ILogSanitizer>().SingleInstance();
         builder.RegisterType<NLogAppLogger>().As<IAppLogger>().SingleInstance();
+        RegisterConnectionStringServices(builder, appSettings);
         ApplicationUseCaseAutofacRegistration.Register(builder, typeof(DddStarter.Application.ApplicationAssemblyMarker).Assembly);
-        builder.Register(_ => new DapperDbContextCore(connectionString)).As<IDbContextCore>().SingleInstance();
+        builder.Register(ctx =>
+            {
+                IConnectionStringProvider connectionStringProvider = ctx.Resolve<IConnectionStringProvider>();
+                string connectionString = connectionStringProvider.GetRequiredConnectionString(appSettings.Database.DefaultConnectionName);
+                return new DapperDbContextCore(connectionString);
+            })
+            .As<IDbContextCore>()
+            .SingleInstance();
         MediatRAutofacRegistration.Register(builder, assemblies);
 
         return builder.Build();
+    }
+
+    private static void RegisterConnectionStringServices(ContainerBuilder builder, AppSettings appSettings)
+    {
+        switch (appSettings.ConnectionStringProvider.Kind)
+        {
+            case ConnectionStringProviderKinds.DataProtection:
+                builder.RegisterType<DataProtectionConnectionStringProvider>().As<IConnectionStringProvider>().SingleInstance();
+                builder.RegisterType<ConnectionStringSecretProtector>().As<IConnectionStringSecretProtector>().SingleInstance();
+                break;
+            case ConnectionStringProviderKinds.Environment:
+                builder.RegisterType<EnvironmentConnectionStringProvider>().As<IConnectionStringProvider>().SingleInstance();
+                builder.Register(_ => new UnsupportedConnectionStringSecretProtector(appSettings.ConnectionStringProvider.Kind))
+                    .As<IConnectionStringSecretProtector>()
+                    .SingleInstance();
+                break;
+            default:
+                throw new InvalidOperationException($"Unsupported AppSettings:ConnectionStringProvider:Kind '{appSettings.ConnectionStringProvider.Kind}'.");
+        }
     }
 }
