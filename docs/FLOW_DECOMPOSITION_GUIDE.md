@@ -17,14 +17,18 @@ If a step both reads and writes, split into `Query` then `Command`.
 
 ## 3. Apply the Slice Shape
 For each business flow, create:
+- `domain/services/<Business>ExecutionService.cs` (pure domain logic; returns a result VO, no logging/persistence)
+- `domain/value-objects/<Business>ResultVo.cs` (immutable result returned to the application)
 - `application/use-cases/<Business>BusinessUseCase.cs` (record contracts only)
-- `application/handlers/<Business>BusinessUseCase.<Request>Handler.cs` (execution logic)
+- `application/handlers/<Business>BusinessUseCase.<Request>Handler.cs` (orchestration: call the domain service, then log/persist based on the result)
 - `application/validators/<Business><Request>Validator.cs` (optional)
 - `application/workflows/<Business>Workflow.cs` (dispatch only)
 - `application/behaviors/*Behavior.cs` only when a new cross-cutting concern is required.
 
 Notes:
 - Naming/contract details are lint-governed (`CQRS100/101/102`), not duplicated here.
+- `*Service` classes must live under `domain/services/` (`PATH006`).
+- Domain services never log or decide persistence; they return a result and the handler orchestrates side effects.
 
 ## 4. Keep the State/Data Rule
 At boundaries, prefer producing next values instead of mutating shared state.
@@ -47,11 +51,15 @@ flowchart TB
   WF --> BH
   BH --> H
   H --> U
-  H --> D
+  H -->|calls pure service, gets result| D
+  H -->|orchestrates logging/persistence| I
   V -.validates requests for.-> BH
-  I -.implements ports for.-> H
-  I -.implements ports for.-> D
+  I -.implements application ports for.-> H
 ```
+
+Note: domain services return a result value object. The handler owns logging and the
+persist/skip decision. Infrastructure-internal abstractions (e.g. sanitizers) live in
+infrastructure next to their implementations, not in `application/contracts`.
 
 ## 6. Verify with Tooling
 1. Run linter.

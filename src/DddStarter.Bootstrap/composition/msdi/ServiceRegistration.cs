@@ -6,10 +6,13 @@ using DddStarter.Controller.Abstractions;
 using DddStarter.Controller.Api;
 using DddStarter.Controller.Cli;
 using DddStarter.Controller.Console;
+using DddStarter.Domain.Services;
 using DddStarter.Infrastructure.Configuration;
+using DddStarter.Infrastructure.Configuration.Abstractions;
 using DddStarter.Infrastructure.Configuration.Rules;
 using DddStarter.Infrastructure.Database.Core;
 using DddStarter.Infrastructure.Logging;
+using DddStarter.Infrastructure.Logging.Abstractions;
 using DddStarter.Infrastructure.Logging.Rules;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +36,7 @@ public static class ServiceRegistration
         RegisterLogging(services);
         AppSettings appSettings = RegisterConfiguration(services, configuration);
         RegisterPersistence(services, appSettings);
+        RegisterDomainServices(services);
         ApplicationUseCaseServiceCollectionRegistration.Register(services, typeof(ApplicationAssemblyMarker).Assembly);
         services.AddTransient<MonitoringWorkflow>();
         MediatRServiceCollectionRegistration.Register(services, CompositionAssemblies.All);
@@ -73,6 +77,15 @@ public static class ServiceRegistration
             .SetApplicationName(appSettings.DataProtection.ApplicationName);
 
         return appSettings;
+    }
+
+    /// <summary>
+    /// Registers pure domain services consumed by application handlers.
+    /// </summary>
+    /// <param name="services">The target service collection.</param>
+    private static void RegisterDomainServices(IServiceCollection services)
+    {
+        services.AddSingleton<MonitoringExecutionService>();
     }
 
     /// <summary>

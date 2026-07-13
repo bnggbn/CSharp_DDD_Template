@@ -89,12 +89,14 @@ If a real false positive appears, stop treating it as a normal code fix. Report:
 Follow the repository's concrete policy first. When the repo does not specify a rule, use these defaults:
 
 - Domain should not depend on application, infrastructure, bootstrap, controller, API, UI, or framework-specific transport concerns.
-- Application may define use cases, workflows, commands, queries, ports/contracts, validators, behaviors, and application services.
+- Application may define use cases, workflows, commands, queries, ports/contracts, validators, and behaviors.
+- Business/domain services live in the **domain** layer (`domain/services/`, `*Service`). They are pure: they compute and **return a result** (typically a value object) and must not log, decide persistence, or reference application/infrastructure.
 - `application/use-cases/*BusinessUseCase.cs` should normally contain request records only: nested `Command`/`Query` contracts, not execution logic.
-- Infrastructure implements application contracts and owns external systems, persistence details, file systems, logging sinks, and adapters.
+- Infrastructure implements application contracts and owns external systems, persistence details, file systems, logging sinks, and adapters. Infrastructure-internal abstractions (that only infrastructure consumes) belong in infrastructure (e.g. `infrastructure/<area>/abstractions/`), not in `application/contracts`.
+- `application/contracts/ports` should expose only interfaces the application actually calls (e.g. logger, validator, repository/port abstractions).
 - Controllers stay thin: parse input, build request, call a workflow or application entry point, and return a response.
 - Workflows own orchestration and step order; in MediatR-shaped repos they should usually be dispatch-only through `ISender`.
-- Handlers execute one command/query and should not orchestrate a business flow by sending other commands.
+- Handlers execute one command/query. They **orchestrate side effects** (logging, persist/skip decisions, notifications) based on the result returned by domain services, but should not dispatch other commands.
 - Commands and queries remain contract-shaped immutable request records, not business-service containers.
 - Cross-cutting validation, logging, and exception handling belong in behaviors/middleware unless the repo's concrete pattern says otherwise.
 - DTOs are transport/application boundary objects. Value objects belong to domain or business logic and should be treated as immutable once constructed.

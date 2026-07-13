@@ -1,0 +1,16 @@
+# Anthropic (Claude) skill manifest
+schema_version: v1
+skill:
+  name: ddd-cage
+  display_name: DDD/CQRS .NET Agent Contract
+  description: >
+    Enforce the repository's DDD/CQRS architecture gate while editing .NET code.
+    Detect the repo's concrete policy, run the repo linter when present, and never
+    claim completion while the linter exits non-zero.
+  entrypoint: ../SKILL.md
+  instructions: >
+    When modifying DDD/CQRS-shaped .NET code: keep domain services pure (they return
+    result value objects and never log or decide persistence), let application handlers
+    orchestrate logging and the persist/skip decision, keep only application-facing
+    interfaces in application/contracts/ports, run the repo linter, and do not weaken
+    policy to make findings disappear.

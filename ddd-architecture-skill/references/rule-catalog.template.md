@@ -22,6 +22,7 @@
 - `PATH003`: `*Helper` classes should stay in `infrastructure/helpers`.
 - `PATH004`: `*Extensions` classes should stay in `infrastructure/extensions`.
 - `PATH005`: `*Constants` classes should stay in `infrastructure/constants`.
+- `PATH006`: `*Service` classes should stay in `domain/services` (pure domain services that return results).
 - `CQRS100`: `*Command` must be declared as `record` and nested in `*BusinessUseCase` under `application/use-cases/`.
 - `CQRS101`: `*Query` must be declared as `record` and nested in `*BusinessUseCase` under `application/use-cases/`.
 - `CQRS102`: files under `application/use-cases/` must be `*UseCase.cs`; class names must end with `UseCase`; class members must be `record *Command/*Query` only.

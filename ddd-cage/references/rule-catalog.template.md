@@ -21,6 +21,7 @@
 - `PATH003`: `*Helper` classes should stay in `infrastructure/helpers`.
 - `PATH004`: `*Extensions` classes should stay in `infrastructure/extensions`.
 - `PATH005`: `*Constants` classes should stay in `infrastructure/constants`.
+- `PATH006`: `*Service` classes should stay in `domain/services` (pure domain services that return results).
 - `CQRS100`: each command file must contain exactly one `*Command` and exactly one matching `IRequestHandler<ThatCommand, ...>`.
 - `CQRS101`: each query file must contain exactly one `*Query` and exactly one matching `IRequestHandler<ThatQuery, ...>`.
 

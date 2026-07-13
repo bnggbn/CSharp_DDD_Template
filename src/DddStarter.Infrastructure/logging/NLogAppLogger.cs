@@ -1,4 +1,5 @@
 using DddStarter.Application.Contracts.Ports;
+using DddStarter.Infrastructure.Logging.Abstractions;
 using NLog;
 
 namespace DddStarter.Infrastructure.Logging;

@@ -1,6 +1,7 @@
 {
   "requireAsciiPath": true,
   "ruleDescriptions": {
+    "PATH006": "Classes matching '*Service' must be placed under '/domain/services/' (pure domain services).",
     "CQRS100": "Command records must be nested in '*BusinessUseCase' under application/use-cases.",
     "CQRS101": "Query records must be nested in '*BusinessUseCase' under application/use-cases.",
     "CQRS102": "Use-case files must be '*UseCase.cs' and contain only record command/query members.",
@@ -37,6 +38,13 @@
       "typeRegex": "\\bclass\\s+([A-Za-z0-9_]+)",
       "requiredPrefix": "",
       "requiredSuffix": "UseCase"
+    }
+  ],
+  "pathTypeRules": [
+    {
+      "ruleId": "PATH006",
+      "typeRegex": "\\bclass\\s+([A-Za-z0-9_]*Service)\\b",
+      "requiredPathContains": "/domain/services/"
     }
   ],
   "cqrsCommandFileRule": {

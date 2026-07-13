@@ -42,14 +42,15 @@ If a step both reads and writes, split it into a Query then a Command unless the
 For a business flow, prefer this shape when the repository has the matching folders:
 
 ```text
+src/<Context>.Domain/services/<Business>ExecutionService.cs      # pure domain logic, returns a result VO
+src/<Context>.Domain/value-objects/<Business>ResultVo.cs         # immutable result returned to application
 src/<Context>.Application/use-cases/<Business>BusinessUseCase.cs
-src/<Context>.Application/handlers/<Business>BusinessUseCase.<Request>Handler.cs
+src/<Context>.Application/handlers/<Business>BusinessUseCase.<Request>Handler.cs   # orchestrates logging/persistence
 src/<Context>.Application/validators/<Business><Request>Validator.cs
 src/<Context>.Application/workflows/<Business>Workflow.cs
-src/<Context>.Application/contracts/use-cases/I<Business>ExecutionUseCase.cs
-src/<Context>.Application/services/<Business>ExecutionService.cs
+src/<Context>.Application/contracts/ports/I<Application-Facing-Port>.cs            # only what the app calls
 src/<Context>.Application/behaviors/*Behavior.cs          # only for cross-cutting concerns
-src/<Context>.Infrastructure/...                         # technical implementations
+src/<Context>.Infrastructure/...                         # technical implementations + infra-internal abstractions
 src/<Context>.Bootstrap/...                              # composition/DI wiring
 src/<Context>.Controller/...                             # API/CLI/Console delivery
 ```
@@ -176,9 +177,9 @@ Handler = one unit of work, not a hidden workflow.
 Allowed:
 
 - Validate assumptions already expressed by the request contract.
-- Call domain behavior.
+- Call a pure domain service and receive its result.
 - Call application contracts/ports.
-- Call application services behind interfaces.
+- Orchestrate side effects (logging, persist/skip decisions, notifications) based on the returned result.
 - Persist or read through abstractions.
 - Return the request result.
 
@@ -189,6 +190,7 @@ Avoid:
 - Sequencing a full business flow.
 - Calling controllers.
 - Directly depending on infrastructure implementations.
+- Pushing logging or persistence decisions down into the domain service.
 - Catching exceptions only to hide failures.
 
 Preferred shape:
@@ -196,22 +198,33 @@ Preferred shape:
 ```csharp
 public sealed class ExecuteCommandHandler : IRequestHandler<ExecuteCommand, Unit>
 {
-    private readonly IMonitoringExecutionUseCase _execution;
+    private readonly MonitoringExecutionService _execution;   // pure domain service
+    private readonly IAppLogger _logger;
 
-    public ExecuteCommandHandler(IMonitoringExecutionUseCase execution)
+    public ExecuteCommandHandler(MonitoringExecutionService execution, IAppLogger logger)
     {
         _execution = execution;
+        _logger = logger;
     }
 
     public Task<Unit> Handle(ExecuteCommand request, CancellationToken cancellationToken)
     {
-        _execution.Execute();
+        MonitoringResultVo result = _execution.Execute(request.TriggeredBy);
+
+        // Application orchestration owns logging and the persist/skip decision.
+        _logger.Info($"Monitoring executed (severity: {result.Severity}).");
+        if (result.Severity >= SeverityLevel.Medium)
+        {
+            _logger.Warn($"Monitoring result recorded: {result.Summary}");
+        }
+
         return Task.FromResult(Unit.Value);
     }
 }
 ```
 
-If the code wants to call another command from a handler, move that sequencing up into a workflow.
+The domain service stays pure (no logging, no persistence). If the code wants to call another
+command from a handler, move that sequencing up into a workflow.
 
 ## Validator Layer
 
@@ -263,10 +276,9 @@ Application contracts define stable boundaries.
 
 Allowed:
 
-- Interfaces under `application/contracts`.
-- Ports consumed by handlers/services.
-- Use-case abstractions.
-- Logger, sanitizer, repository, clock, notification, and external integration abstractions.
+- Interfaces under `application/contracts` that the application layer actually calls.
+- Ports consumed by handlers/behaviors.
+- Logger, repository, clock, notification, and external integration abstractions the application invokes.
 
 Avoid:
 
@@ -274,6 +286,10 @@ Avoid:
 - Bootstrap dependencies.
 - Controller/API dependencies.
 - Concrete external SDK types leaking into application contracts unless the repo already standardizes on them.
+- Infrastructure-internal abstractions that only infrastructure consumes (e.g. a sanitizer used only by a logger implementation). Keep those in infrastructure, next to their implementation (for example `infrastructure/<area>/abstractions/`).
+
+Rule of thumb: an interface belongs in `application/contracts/ports` only if application-layer code calls it.
+If only infrastructure calls it, it is an infrastructure-internal abstraction and stays in infrastructure.
 
 Naming default:
 
@@ -287,30 +303,35 @@ Examples:
 ```text
 IAppLogger
 IRequestValidator<TRequest>
-IMonitoringExecutionUseCase
 GetActiveUserByAccountAsync
 InsertPasswordResetTokenAsync
 ```
 
-## Application Services
+## Domain Services and Result Orchestration
 
-Application services implement use-case/application behavior behind contracts.
+Business/domain services live in the domain layer (`domain/services/`, `*Service`, enforced by `PATH006`).
+
+A domain service is pure:
+
+- It computes a business result and **returns it** (typically an immutable value object).
+- It must not log, decide persistence ("落檔 or not"), or trigger side effects.
+- It must not reference application, infrastructure, bootstrap, or controller layers (`DEP001`).
 
 Allowed:
 
-- Business-adjacent application logic.
-- Calling application ports.
-- Calling domain behavior.
-- Coordinating small pieces inside one request execution.
+- Domain calculations, invariants, and policies.
+- Calling other domain behavior and value objects.
+- Returning a result value object describing the outcome.
 
 Avoid:
 
-- Becoming a god object.
-- Replacing workflows for cross-request orchestration.
-- Bypassing command/query contracts.
-- Depending on infrastructure implementations directly.
+- Injecting or calling loggers, repositories, file systems, or any infrastructure.
+- Deciding whether to persist/log inside the service.
+- Depending on application contracts or MediatR.
 
-Use an application service when a handler needs reusable application behavior but does not need a whole workflow.
+The **handler** consumes the domain service, inspects the returned result, and orchestrates
+side effects (logging, persist/skip, notifications). This keeps the "落檔" decision in one place
+(application orchestration) instead of scattered inside domain logic.
 
 ## Domain Layer
 
@@ -560,12 +581,15 @@ When changing code:
 | Request validation | Validator |
 | Cross-cutting validation/logging/exception pipeline | Behavior |
 | Business invariant | Domain |
-| Business value type | Domain value object |
+| Business calculation service (returns a result) | Domain service (`domain/services/`) |
+| Business value type / result object | Domain value object |
+| Logging / persist decision from a result | Application handler orchestration |
 | External API call | Infrastructure adapter behind application port |
 | SQL / EF / Dapper implementation | Infrastructure repository |
 | DI registration | Bootstrap/composition |
 | Response/request shape | DTO boundary |
-| Repository interface | Application contract/port |
+| Repository / port interface the application calls | Application contract/port |
+| Abstraction only infrastructure consumes | Infrastructure internal abstraction |
 | Repository implementation | Infrastructure |
 
 ## When Unsure

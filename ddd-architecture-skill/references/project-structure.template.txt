@@ -1,23 +1,23 @@
 src/
   YourProject.Domain/
     entities/
-    value-objects/
+    value-objects/        # includes result VOs returned by domain services
     enums/
-    services/
+    services/             # pure domain services (*Service, PATH006); return results, no logging/persistence
     monitors/
   YourProject.Application/
     contracts/
-      ports/
-      use-cases/
-      runtime/
+      ports/              # only interfaces the application actually calls
     use-cases/
-    handlers/
+    handlers/             # orchestrate: call domain service, then log/persist from the result
     validators/
     workflows/
     behaviors/
-    services/
   YourProject.Infrastructure/
     configuration/
+      abstractions/       # infrastructure-internal abstractions
+    logging/
+      abstractions/       # infrastructure-internal abstractions (e.g. sanitizers)
     eventlog/
     notifications/
     security/

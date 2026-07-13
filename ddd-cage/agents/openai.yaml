@@ -1,5 +1,6 @@
+# OpenAI (Codex/GPT) agent manifest
 version: 1
 interface:
   display_name: DDD/CQRS .NET Agent Contract
   short_description: Enforce repo DDD/CQRS gates while editing .NET code.
-  default_prompt: When modifying DDD/CQRS-shaped .NET code, discover and follow the repo's concrete policy, run the repo linter if present, and do not claim completion while the linter exits non-zero.
+  default_prompt: When modifying DDD/CQRS-shaped .NET code, follow the repo's concrete policy, keep domain services pure (return a result, no logging/persistence) with orchestration in application handlers, run the repo linter if present, and do not claim completion while the linter exits non-zero.

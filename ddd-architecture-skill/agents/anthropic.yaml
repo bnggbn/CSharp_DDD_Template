@@ -1,0 +1,15 @@
+# Anthropic (Claude) skill manifest
+schema_version: v1
+skill:
+  name: ddd-architecture-linter
+  display_name: DDD Architecture Linter
+  description: >
+    Build and enforce a reusable, policy-driven DDD architecture linter for .NET
+    repositories, covering dependency direction, naming, path placement, and mutation
+    guardrails.
+  entrypoint: ../SKILL.md
+  instructions: >
+    Read the linter policy first, run the linter against the target repository, report
+    findings as [RuleId] file: message, patch policy or rules, and re-run until clean.
+    Enforce that domain services (*Service) live under domain/services and stay pure,
+    and that only application-facing interfaces live in application/contracts.

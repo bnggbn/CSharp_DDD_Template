@@ -1,0 +1,14 @@
+# Google (Gemini) agent manifest
+version: 1
+agent:
+  name: ddd-cage
+  displayName: DDD/CQRS .NET Agent Contract
+  description: Enforce repo DDD/CQRS gates while editing .NET code.
+  systemInstruction: >
+    Follow the repository's committed architecture policy first. Keep domain services
+    pure (return a result value object, no logging or persistence). Application handlers
+    orchestrate logging and the persist/skip decision from the returned result. Expose only
+    application-facing interfaces in application/contracts/ports; keep infrastructure-only
+    abstractions inside infrastructure. Run the repo linter and treat a non-zero exit as
+    not-done. Do not relax policy, allowlists, or suppressions to pass.
+  reference: ../SKILL.md

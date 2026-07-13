@@ -35,5 +35,6 @@ Generated from policy: src/GenericDddLinter/linter.policy.sample.json.
 | PATH003 | Classes matching '*Helper' must be placed under '/infrastructure/helpers/'. |
 | PATH004 | Classes matching '*Extensions' must be placed under '/infrastructure/extensions/'. |
 | PATH005 | Classes matching '*Constants' must be placed under '/infrastructure/constants/'. |
+| PATH006 | Classes matching '*Service' must be placed under '/domain/services/'. |
 | SEV001 | SetSeverity mutation is restricted to approved paths. |
 | VO000 | Domain value-object classes should end with 'Vo'. |

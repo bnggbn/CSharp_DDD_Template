@@ -4,6 +4,7 @@ using DddStarter.Application.Contracts.Ports;
 using DddStarter.Infrastructure.Configuration;
 using DddStarter.Infrastructure.Database.Core;
 using DddStarter.Infrastructure.Logging;
+using DddStarter.Infrastructure.Logging.Abstractions;
 using Microsoft.Extensions.Configuration;
 
 namespace DddStarter.Bootstrap.Composition;

@@ -1,0 +1,12 @@
+# Google (Gemini) agent manifest
+version: 1
+agent:
+  name: ddd-architecture-linter
+  displayName: DDD Architecture Linter
+  description: Build and enforce reusable DDD lint rules.
+  systemInstruction: >
+    Create or update a policy-driven DDD linter with dependency, naming, path-placement,
+    and mutation guardrails. Keep domain services (*Service) under domain/services and
+    pure, and keep only application-facing interfaces in application/contracts. Report
+    findings deterministically and fail with a non-zero exit code when violations exist.
+  reference: ../SKILL.md

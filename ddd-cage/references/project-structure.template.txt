@@ -1,23 +1,23 @@
 ﻿src/
   YourProject.Domain/
     entities/
-    value-objects/
+    value-objects/        # includes result VOs returned by domain services
     enums/
-    services/
+    services/             # pure domain services (*Service, PATH006); return results, no logging/persistence
     monitors/
   YourProject.Application/
     contracts/
-      ports/
-      use-cases/
-      runtime/
-    use-cases/
-      behaviors/
-      handlers/
-      validators/
-      workflows/
-    services/
+      ports/              # only interfaces the application actually calls (logger, validators, repositories)
+    use-cases/            # *BusinessUseCase.cs: nested Command/Query records only
+    handlers/             # orchestrate: call domain service, then log/persist from the result
+    validators/
+    workflows/            # dispatch-only via ISender
+    behaviors/            # cross-cutting: validation, logging, exception handling
   YourProject.Infrastructure/
     configuration/
+      abstractions/       # infrastructure-internal abstractions (consumed only by infrastructure)
+    logging/
+      abstractions/       # infrastructure-internal abstractions (e.g. sanitizers)
     eventlog/
     notifications/
     security/
@@ -33,13 +33,8 @@
     console/
     hosting/
 
-workflow-shape/
-  Controller
-    -> builds request
-    -> calls Workflow.RunAsync(...)
-  Workflow
-    -> owns orchestration
-    -> sends commands/queries in step order
-  Handler
-    -> executes one command only
-    -> does not orchestrate other commands
+notes/
+  - Business/domain services live in domain/services and return result value objects.
+  - The application handler owns logging and the persist/skip decision, based on the result.
+  - application/contracts/ports exposes only application-facing interfaces.
+  - Interfaces consumed only by infrastructure live under infrastructure/<area>/abstractions.

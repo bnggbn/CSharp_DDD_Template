@@ -1,5 +1,5 @@
 using System.Text;
-using DddStarter.Application.Contracts.Ports;
+using DddStarter.Infrastructure.Configuration.Abstractions;
 
 namespace DddStarter.Infrastructure.Configuration;
 

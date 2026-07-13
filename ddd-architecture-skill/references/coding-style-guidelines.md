@@ -24,11 +24,19 @@
 - Also avoid N x M Cartesian-product style queries.
 
 ## DTO and VO Boundaries
-- Build DTOs in the application layer for transport concerns; services may adjust DTO content.
-- Build VOs in the service layer; once created, treat them as immutable/read-only.
+- Build DTOs in the application layer for transport concerns.
+- Build VOs in the domain layer; once created, treat them as immutable/read-only.
+- Domain services return result VOs; the application handler consumes them.
+
+## Domain Services and Orchestration
+- Place business/domain services under `domain/services/` (`*Service`, `PATH006`).
+- Keep domain services pure: compute and return a result, never log or decide persistence.
+- The application handler orchestrates side effects (logging, persist/skip) from the returned result.
+- Keep only application-facing interfaces in `application/contracts/ports`; abstractions consumed only by infrastructure belong in infrastructure (e.g. `infrastructure/<area>/abstractions/`).
 
 ## Validation and Exception Handling
 - For data-fix requests, validate first and handle via normal logic flow, not by falling into exception flow.
 - After an exception occurs, confirm middleware catches it.
 - If middleware catches it, do not mutate data inside exception handlers.
 - If middleware does not catch it, log the error and exception details.
+- Logging is an application/orchestration concern (handlers, behaviors), not a domain-service concern.

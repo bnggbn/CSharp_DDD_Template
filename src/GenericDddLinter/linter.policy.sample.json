@@ -13,6 +13,7 @@
     "INFC001": "Infrastructure constants classes should end with 'Constants'.",
     "PATH001": "Classes matching '*Monitor' must be placed under '/monitors/'.",
     "PATH002": "Classes matching '*UseCase' must be placed under '/use-cases/'.",
+    "PATH006": "Classes matching '*Service' must be placed under '/domain/services/'.",
     "PATH003": "Classes matching '*Helper' must be placed under '/infrastructure/helpers/'.",
     "PATH004": "Classes matching '*Extensions' must be placed under '/infrastructure/extensions/'.",
     "PATH005": "Classes matching '*Constants' must be placed under '/infrastructure/constants/'.",
@@ -121,6 +122,11 @@
       "ruleId": "PATH002",
       "typeRegex": "\\bclass\\s+([A-Za-z0-9_]*UseCase)\\b",
       "requiredPathContains": "/use-cases/"
+    },
+    {
+      "ruleId": "PATH006",
+      "typeRegex": "\\bclass\\s+([A-Za-z0-9_]*Service)\\b",
+      "requiredPathContains": "/domain/services/"
     },
     {
       "ruleId": "PATH003",
