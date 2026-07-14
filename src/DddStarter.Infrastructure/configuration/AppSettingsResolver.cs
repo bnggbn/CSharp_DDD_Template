@@ -37,6 +37,9 @@ public static class AppSettingsResolver
                 }
 
                 break;
+            case ConnectionStringProviderKinds.AwsSecretsManager:
+                ValidateAwsSecretsManagerConnectionStrings(appSettings);
+                break;
             default:
                 throw new InvalidOperationException($"Unsupported AppSettings:ConnectionStringProvider:Kind '{appSettings.ConnectionStringProvider.Kind}'.");
         }
@@ -54,6 +57,21 @@ public static class AppSettingsResolver
         if (!appSettings.Database.EncryptedConnectionStringPaths.ContainsKey(appSettings.Database.DefaultConnectionName))
         {
             throw new InvalidOperationException("AppSettings:Database:DefaultConnectionName must point to an existing encrypted connection string path.");
+        }
+    }
+
+    private static void ValidateAwsSecretsManagerConnectionStrings(AppSettings appSettings)
+    {
+        if (string.IsNullOrWhiteSpace(appSettings.AwsSecretsManager.RegionSystemName))
+        {
+            throw new InvalidOperationException("AppSettings:AwsSecretsManager:RegionSystemName must be provided for the AwsSecretsManager provider.");
+        }
+
+        bool hasDefaultMapping = appSettings.AwsSecretsManager.ConnectionSecretIds.ContainsKey(appSettings.Database.DefaultConnectionName);
+        bool hasUsablePrefix = !string.IsNullOrWhiteSpace(appSettings.AwsSecretsManager.SecretIdPrefix);
+        if (!hasDefaultMapping && !hasUsablePrefix)
+        {
+            throw new InvalidOperationException("AppSettings:AwsSecretsManager must define either ConnectionSecretIds for the default connection or a non-empty SecretIdPrefix.");
         }
     }
 

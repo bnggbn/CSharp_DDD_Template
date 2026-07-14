@@ -1,4 +1,6 @@
 using System.IO;
+using Amazon;
+using Amazon.SecretsManager;
 using DddStarter.Application;
 using DddStarter.Application.Contracts.Ports;
 using DddStarter.Application.Workflows;
@@ -124,6 +126,11 @@ public static class ServiceRegistration
                 break;
             case ConnectionStringProviderKinds.Environment:
                 services.AddSingleton<IConnectionStringProvider, EnvironmentConnectionStringProvider>();
+                break;
+            case ConnectionStringProviderKinds.AwsSecretsManager:
+                services.AddSingleton<IAmazonSecretsManager>(_ =>
+                    new AmazonSecretsManagerClient(RegionEndpoint.GetBySystemName(appSettings.AwsSecretsManager.RegionSystemName)));
+                services.AddSingleton<IConnectionStringProvider, AwsSecretsManagerConnectionStringProvider>();
                 break;
             default:
                 throw new InvalidOperationException($"Unsupported AppSettings:ConnectionStringProvider:Kind '{appSettings.ConnectionStringProvider.Kind}'.");

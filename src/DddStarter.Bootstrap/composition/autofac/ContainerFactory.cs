@@ -1,5 +1,7 @@
 using System.Reflection;
 using Autofac;
+using Amazon;
+using Amazon.SecretsManager;
 using DddStarter.Application.Contracts.Ports;
 using DddStarter.Infrastructure.Configuration;
 using DddStarter.Infrastructure.Database.Core;
@@ -58,6 +60,15 @@ public static class ContainerFactory
                 break;
             case ConnectionStringProviderKinds.Environment:
                 builder.RegisterType<EnvironmentConnectionStringProvider>().As<IConnectionStringProvider>().SingleInstance();
+                builder.Register(_ => new UnsupportedConnectionStringSecretProtector(appSettings.ConnectionStringProvider.Kind))
+                    .As<IConnectionStringSecretProtector>()
+                    .SingleInstance();
+                break;
+            case ConnectionStringProviderKinds.AwsSecretsManager:
+                builder.Register(_ => new AmazonSecretsManagerClient(RegionEndpoint.GetBySystemName(appSettings.AwsSecretsManager.RegionSystemName)))
+                    .As<IAmazonSecretsManager>()
+                    .SingleInstance();
+                builder.RegisterType<AwsSecretsManagerConnectionStringProvider>().As<IConnectionStringProvider>().SingleInstance();
                 builder.Register(_ => new UnsupportedConnectionStringSecretProtector(appSettings.ConnectionStringProvider.Kind))
                     .As<IConnectionStringSecretProtector>()
                     .SingleInstance();
