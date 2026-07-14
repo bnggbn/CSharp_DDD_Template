@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DddStarter.Application\DddStarter.Application.csproj" />
+    <ProjectReference Include="..\DddStarter.Dispatching\DddStarter.Dispatching.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

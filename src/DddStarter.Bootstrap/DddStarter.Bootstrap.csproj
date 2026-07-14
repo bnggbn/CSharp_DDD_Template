@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DddStarter.Application\DddStarter.Application.csproj" />
     <ProjectReference Include="..\DddStarter.Controller\DddStarter.Controller.csproj" />
+    <ProjectReference Include="..\DddStarter.Dispatching\DddStarter.Dispatching.csproj" />
     <ProjectReference Include="..\DddStarter.Domain\DddStarter.Domain.csproj" />
     <ProjectReference Include="..\DddStarter.Infrastructure\DddStarter.Infrastructure.csproj" />
   </ItemGroup>
@@ -14,7 +15,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
-    <PackageReference Include="MediatR" Version="13.1.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
   </ItemGroup>
 

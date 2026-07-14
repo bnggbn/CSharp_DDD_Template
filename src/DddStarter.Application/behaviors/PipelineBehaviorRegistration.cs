@@ -1,4 +1,4 @@
-using MediatR;
+using DddStarter.Dispatching.Contracts;
 
 namespace DddStarter.Application.Behaviors;
 

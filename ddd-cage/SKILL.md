@@ -15,7 +15,7 @@ The goal is simple: when the repository already has an architecture gate, step o
 Use this skill when the task touches `.cs`, `.csproj`, `.sln`, test projects, dependency injection, controllers, handlers, workflows, repositories, domain models, value objects, DTOs, validators, or infrastructure adapters **and** at least one of these signals is present:
 
 - Projects or folders named like `*.Domain`, `*.Application`, `*.Infrastructure`, `*.Controller`, `*.Api`, `*.Bootstrap`, `Application`, `Domain`, `Infrastructure`, `Controllers`, `Workflows`, `Handlers`, `Commands`, or `Queries`.
-- CQRS/MediatR code such as `IRequest`, `IRequestHandler`, `Command`, `Query`, `Handler`, `Validator`, `Behavior`, `Workflow`, `*BusinessUseCase`, `application/use-cases`, `application/workflows`, or `_sender.Send(...)`.
+- CQRS/dispatching code such as `IRequest`, `IRequestHandler`, `Command`, `Query`, `Handler`, `Validator`, `Behavior`, `Workflow`, `*UseCase`, `application/use-cases`, `application/workflows`, or `_dispatcher.Send(...)`.
 - Existing architecture-linter assets such as a concrete policy file, rule catalog, linter project, linter script, `GenericDddLinter`, `linter.policy.sample.json`, `LINT_RULES.generated.md`, `ddd-lint`, `architecture-lint`, `linter-policy`, `rule-catalog`, or similar repo-specific enforcement files.
 - A change that moves code across application/domain/infrastructure/controller boundaries.
 
@@ -91,11 +91,11 @@ Follow the repository's concrete policy first. When the repo does not specify a 
 - Domain should not depend on application, infrastructure, bootstrap, controller, API, UI, or framework-specific transport concerns.
 - Application may define use cases, workflows, commands, queries, ports/contracts, validators, and behaviors.
 - Business/domain services live in the **domain** layer (`domain/services/`, `*Service`). They are pure: they compute and **return a result** (typically a value object) and must not log, decide persistence, or reference application/infrastructure.
-- `application/use-cases/*BusinessUseCase.cs` should normally contain request records only: nested `Command`/`Query` contracts, not execution logic.
+- `application/use-cases/*UseCase.cs` should normally contain request records only: nested `Command`/`Query` contracts, not execution logic.
 - Infrastructure implements application contracts and owns external systems, persistence details, file systems, logging sinks, and adapters. Infrastructure-internal abstractions (that only infrastructure consumes) belong in infrastructure (e.g. `infrastructure/<area>/abstractions/`), not in `application/contracts`.
 - `application/contracts/ports` should expose only interfaces the application actually calls (e.g. logger, validator, repository/port abstractions).
 - Controllers stay thin: parse input, build request, call a workflow or application entry point, and return a response.
-- Workflows own orchestration and step order; in MediatR-shaped repos they should usually be dispatch-only through `ISender`.
+- Workflows own orchestration and step order; in dispatcher-shaped repos they should usually be dispatch-only through `IDispatcher`.
 - Handlers execute one command/query. They **orchestrate side effects** (logging, persist/skip decisions, notifications) based on the result returned by domain services, but should not dispatch other commands.
 - Commands and queries remain contract-shaped immutable request records, not business-service containers.
 - Cross-cutting validation, logging, and exception handling belong in behaviors/middleware unless the repo's concrete pattern says otherwise.

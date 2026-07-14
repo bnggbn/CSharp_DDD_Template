@@ -7,7 +7,7 @@ This document is organized by **who guarantees the rule**.
 |---|---|
 | Domain must not depend on infrastructure details. | `DEP001`/`DEP002` in generated lint contracts |
 | State transitions should produce next values (no boundary-crossing mutation). | `IMM001` for request contracts; code review for wider domain mutation boundaries |
-| Workflow is dispatch-only (`ISender` + `new`). | `FLOW001`/`FLOW002`/`FLOW003`/`CTRL001` + sample slice |
+| Workflow is dispatch-only (`IDispatcher` + `new`). | `FLOW001`/`FLOW002`/`FLOW003`/`CTRL001` + sample slice |
 | Services are pure domain logic; they return results and never log or decide persistence. | `PATH006` (`*Service` under `domain/services/`) + `DEP001` (domain cannot reach `IAppLogger`) |
 | Application (handlers) orchestrates logging and the persist/skip decision from the returned result. | Sample slice + code review |
 | Only application-facing ports live in `contracts/ports`; infrastructure-internal abstractions live in infrastructure. | `DEP002` + convention (see below) |

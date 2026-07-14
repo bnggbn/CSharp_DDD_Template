@@ -6,6 +6,7 @@
     <Project Path="src/DddStarter.Cli.Sample/DddStarter.Cli.Sample.csproj" />
     <Project Path="src/DddStarter.Controller/DddStarter.Controller.csproj" />
     <Project Path="src/DddStarter.Console.Sample/DddStarter.Console.Sample.csproj" />
+    <Project Path="src/DddStarter.Dispatching/DddStarter.Dispatching.csproj" />
     <Project Path="src/DddStarter.Domain/DddStarter.Domain.csproj" />
     <Project Path="src/DddStarter.Infrastructure/DddStarter.Infrastructure.csproj" />
     <Project Path="src/GenericDddLinter/GenericDddLinter.csproj" />

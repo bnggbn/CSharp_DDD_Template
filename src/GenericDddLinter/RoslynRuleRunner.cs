@@ -338,7 +338,7 @@ internal static class RoslynRuleRunner
 
                     if (!IsAllowedWorkflowDependency(parameterType, policy.WorkflowConstructorRule.AllowedDependencyTypeNames))
                     {
-                        issues.Add($"[{policy.WorkflowConstructorRule.RuleId}] {rel}: workflow constructor dependency '{parameterType.ToDisplayString()}' is not allowed. Depend on 'MediatR.ISender' only.");
+                        issues.Add($"[{policy.WorkflowConstructorRule.RuleId}] {rel}: workflow constructor dependency '{parameterType.ToDisplayString()}' is not allowed. Depend on 'IDispatcher' only.");
                     }
                 }
             }
@@ -376,9 +376,9 @@ internal static class RoslynRuleRunner
                         continue;
                     }
 
-                    if (!IsAllowedWorkflowDispatchCall(receiverSymbol, targetMethodSymbol))
+                    if (!IsAllowedWorkflowDispatchCall(receiverSymbol, targetMethodSymbol, policy.WorkflowConstructorRule.AllowedDependencyTypeNames))
                     {
-                        issues.Add($"[{policy.WorkflowDispatchRule.RuleId}] {rel}: workflow method '{method.Identifier.Text}' must not call injected dependency '{receiverSymbol?.Name}.{targetMethodSymbol?.Name}(...)'. Use 'ISender.Send(new <Request>(...), ct)' for orchestration.");
+                        issues.Add($"[{policy.WorkflowDispatchRule.RuleId}] {rel}: workflow method '{method.Identifier.Text}' must not call injected dependency '{receiverSymbol?.Name}.{targetMethodSymbol?.Name}(...)'. Use 'IDispatcher.Send(new <Request>(...), ct)' for orchestration.");
                     }
                 }
             }
@@ -667,8 +667,7 @@ internal static class RoslynRuleRunner
     private static bool IsAllowedWorkflowDependency(ITypeSymbol parameterType, List<string> allowedDependencyTypeNames)
     {
         return allowedDependencyTypeNames.Any(allowed =>
-            string.Equals(parameterType.Name, allowed, StringComparison.Ordinal) &&
-            string.Equals(parameterType.ContainingNamespace?.ToDisplayString(), "MediatR", StringComparison.Ordinal));
+            string.Equals(parameterType.Name, allowed, StringComparison.Ordinal));
     }
 
     private static bool TryGetInjectedDependencyTarget(
@@ -699,7 +698,7 @@ internal static class RoslynRuleRunner
         return SymbolEqualityComparer.Default.Equals(receiverSymbol.ContainingType, containingType);
     }
 
-    private static bool IsAllowedWorkflowDispatchCall(ISymbol? receiverSymbol, IMethodSymbol? targetMethodSymbol)
+    private static bool IsAllowedWorkflowDispatchCall(ISymbol? receiverSymbol, IMethodSymbol? targetMethodSymbol, List<string> allowedDependencyTypeNames)
     {
         if (receiverSymbol is not IFieldSymbol and not IPropertySymbol)
         {
@@ -714,21 +713,22 @@ internal static class RoslynRuleRunner
         };
 
         return receiverType != null &&
-               string.Equals(receiverType.Name, "ISender", StringComparison.Ordinal) &&
-               string.Equals(receiverType.ContainingNamespace?.ToDisplayString(), "MediatR", StringComparison.Ordinal) &&
+         allowedDependencyTypeNames.Any(name => string.Equals(receiverType.Name, name, StringComparison.Ordinal)) &&
                string.Equals(targetMethodSymbol?.Name, "Send", StringComparison.Ordinal);
     }
 
     private static bool IsForbiddenMediatorType(ITypeSymbol parameterType, List<string> forbiddenTypeNames)
     {
-        return string.Equals(parameterType.ContainingNamespace?.ToDisplayString(), "MediatR", StringComparison.Ordinal) &&
-               forbiddenTypeNames.Any(name => string.Equals(parameterType.Name, name, StringComparison.Ordinal));
+     return forbiddenTypeNames.Any(name => string.Equals(parameterType.Name, name, StringComparison.Ordinal));
     }
 
     private static bool IsForbiddenMediatorInvocation(IMethodSymbol methodSymbol, List<string> forbiddenInvocationNames)
     {
-        return methodSymbol.ContainingType != null &&
-               string.Equals(methodSymbol.ContainingType.ContainingNamespace?.ToDisplayString(), "MediatR", StringComparison.Ordinal) &&
+     return methodSymbol.ContainingType != null &&
+         (string.Equals(methodSymbol.ContainingType.Name, "IDispatcher", StringComparison.Ordinal) ||
+          string.Equals(methodSymbol.ContainingType.Name, "ISender", StringComparison.Ordinal) ||
+          string.Equals(methodSymbol.ContainingType.Name, "IMediator", StringComparison.Ordinal) ||
+          string.Equals(methodSymbol.ContainingType.Name, "IPublisher", StringComparison.Ordinal)) &&
                forbiddenInvocationNames.Any(name => string.Equals(methodSymbol.Name, name, StringComparison.Ordinal));
     }
 

@@ -3,6 +3,7 @@ using Autofac;
 using Amazon;
 using Amazon.SecretsManager;
 using DddStarter.Application.Contracts.Ports;
+using DddStarter.Dispatching.Runtime;
 using DddStarter.Infrastructure.Configuration;
 using DddStarter.Infrastructure.Database.Core;
 using DddStarter.Infrastructure.Logging;
@@ -17,7 +18,7 @@ namespace DddStarter.Bootstrap.Composition;
 public static class ContainerFactory
 {
     /// <summary>
-    /// Builds an Autofac container using the template's application, infrastructure, and MediatR registrations.
+    /// Builds an Autofac container using the template's application, infrastructure, and dispatching registrations.
     /// </summary>
     /// <param name="configuration">The application configuration source.</param>
     /// <returns>A fully configured Autofac container.</returns>
@@ -45,7 +46,7 @@ public static class ContainerFactory
             })
             .As<IDbContextCore>()
             .SingleInstance();
-        MediatRAutofacRegistration.Register(builder, assemblies);
+        DispatcherAutofacRegistration.Register(builder, assemblies);
 
         return builder.Build();
     }

@@ -8,9 +8,9 @@
     "CQRS103": "Command/query records must not use custom inheritance; only approved request interfaces are allowed.",
     "IMM001": "Command/query records must remain immutable: init-only properties and readonly fields only.",
     "DIP001": "Constructor dependencies in target layers should depend on interfaces (DIP), except approved configuration-style concrete types.",
-    "FLOW001": "Workflow constructors may only depend on ISender.",
-    "FLOW002": "Workflow methods are dispatch-only: they may only create command/query requests and call ISender.Send(...).",
-    "FLOW003": "Handlers must not orchestrate by depending on mediator sender/publisher or dispatching nested requests.",
+    "FLOW001": "Workflow constructors may only depend on IDispatcher.",
+    "FLOW002": "Workflow methods are dispatch-only: they may only create command/query requests and call IDispatcher.Send(...).",
+    "FLOW003": "Handlers must not orchestrate by depending on dispatcher/mediator abstractions or dispatching nested requests.",
     "CTRL001": "Controller constructors must stay in workflow/framework dependency scope."
   },
   "dependencyRules": [
@@ -80,7 +80,7 @@
     "enabled": true,
     "workflowsPathContains": "/application/workflows/",
     "allowedDependencyTypeNames": [
-      "ISender"
+      "IDispatcher"
     ]
   },
   "workflowDispatchRule": {
@@ -97,6 +97,7 @@
     "enabled": true,
     "handlersPathContains": "/application/handlers/",
     "forbiddenDependencyTypeNames": [
+      "IDispatcher",
       "ISender",
       "IMediator",
       "IPublisher"

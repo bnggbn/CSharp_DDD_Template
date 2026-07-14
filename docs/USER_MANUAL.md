@@ -20,12 +20,12 @@ dotnet src/GenericDddLinter/bin/Debug/net10.0/GenericDddLinter.dll src src/Gener
 - Flow process: `docs/FLOW_DECOMPOSITION_GUIDE.md`
 - Canonical sample slice: `docs/SAMPLE_VERTICAL_SLICE.md`
 
-## 5. MediatR Runtime Shape (Quick)
-- `use-cases/*BusinessUseCase.cs`: request records only
+## 5. Dispatching Runtime Shape (Quick)
+- `use-cases/*UseCase.cs`: request records only
 - `handlers/*Handler.cs`: execution logic
 - `validators/*Validator.cs`: request validation rules
 - `behaviors/*Behavior.cs`: cross-cutting middleware
-- `workflows/*Workflow.cs`: dispatch only (`ISender` + `new`)
+- `workflows/*Workflow.cs`: dispatch only (`IDispatcher` + `new`)
 
 ## 6. Typical Workflow
 1. Change code.

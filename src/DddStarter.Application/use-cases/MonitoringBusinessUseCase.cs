@@ -1,5 +1,5 @@
 using DddStarter.Application.Contracts.Ports;
-using MediatR;
+using DddStarter.Dispatching.Contracts;
 
 namespace DddStarter.Application.UseCases.Commands;
 

@@ -101,9 +101,9 @@ Workflow = dispatch-only orchestration.
 
 Allowed:
 
-- Inject `ISender` when the repo uses MediatR.
+- Inject `IDispatcher` when the repo uses the built-in dispatching abstraction.
 - Create concrete Command/Query records.
-- Call `_sender.Send(new Request(...), ct)`.
+- Call `_dispatcher.Send(new Request(...), ct)`.
 - Sequence multiple commands/queries.
 - Pass one step's result into the next step.
 
@@ -120,7 +120,7 @@ Preferred shape:
 ```csharp
 public Task ExecuteAsync(string triggeredBy, CancellationToken cancellationToken = default)
 {
-    return _sender.Send(new MonitoringBusinessUseCase.ExecuteCommand(triggeredBy), cancellationToken);
+    return _dispatcher.Send(new MonitoringUseCase.ExecuteCommand(triggeredBy), cancellationToken);
 }
 ```
 
@@ -128,7 +128,7 @@ If orchestration gets large, keep the order visible in the workflow instead of m
 
 ## UseCase Contract Layer
 
-`application/use-cases/*BusinessUseCase.cs` is the request-contract layer.
+`application/use-cases/*UseCase.cs` is the request-contract layer.
 
 Default rule:
 
@@ -185,7 +185,7 @@ Allowed:
 
 Avoid:
 
-- Injecting `ISender`, `IMediator`, or `IPublisher` unless the repo explicitly allows it.
+- Injecting `IDispatcher` or legacy mediator abstractions (`ISender`, `IMediator`, `IPublisher`) unless the repo explicitly allows it.
 - Calling `Send` or `Publish` to orchestrate another application request.
 - Sequencing a full business flow.
 - Calling controllers.
@@ -574,8 +574,8 @@ When changing code:
 |---|---|
 | HTTP/CLI/Console entry | Controller layer |
 | Multi-step business flow | Workflow |
-| Command contract | `application/use-cases/*BusinessUseCase.cs` |
-| Query contract | `application/use-cases/*BusinessUseCase.cs` |
+| Command contract | `application/use-cases/*UseCase.cs` |
+| Query contract | `application/use-cases/*UseCase.cs` |
 | Single command execution | Handler |
 | Single read operation | Query handler |
 | Request validation | Validator |

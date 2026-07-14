@@ -4,6 +4,7 @@ using Amazon.SecretsManager;
 using DddStarter.Application;
 using DddStarter.Application.Contracts.Ports;
 using DddStarter.Application.Workflows;
+using DddStarter.Dispatching.Runtime;
 using DddStarter.Controller.Abstractions;
 using DddStarter.Controller.Api;
 using DddStarter.Controller.Cli;
@@ -29,7 +30,7 @@ namespace DddStarter.Bootstrap.Composition;
 public static class ServiceRegistration
 {
     /// <summary>
-    /// Registers the template's application, infrastructure, workflow, MediatR, and controller services.
+    /// Registers the template's application, infrastructure, workflow, dispatching, and controller services.
     /// </summary>
     /// <param name="services">The target service collection.</param>
     /// <param name="configuration">The application configuration source.</param>
@@ -42,7 +43,7 @@ public static class ServiceRegistration
         RegisterDomainServices(services);
         ApplicationUseCaseServiceCollectionRegistration.Register(services, typeof(ApplicationAssemblyMarker).Assembly);
         services.AddTransient<MonitoringWorkflow>();
-        MediatRServiceCollectionRegistration.Register(services, CompositionAssemblies.All);
+        DispatcherServiceCollectionRegistration.Register(services, CompositionAssemblies.All);
         RegisterControllers(services);
         services.AddSingleton<IAppController>(sp => sp.GetRequiredService<ConsoleController>());
         return services;

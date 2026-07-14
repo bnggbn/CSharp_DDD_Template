@@ -1,19 +1,20 @@
 using DddStarter.Application.UseCases.Commands;
-using MediatR;
+using DddStarter.Application.Contracts.Ports;
+using DddStarter.Dispatching.Contracts;
 
 namespace DddStarter.Application.Workflows;
 
 public sealed class MonitoringWorkflow
 {
-    private readonly ISender _sender;
+    private readonly IDispatcher _dispatcher;
 
-    public MonitoringWorkflow(ISender sender)
+    public MonitoringWorkflow(IDispatcher dispatcher)
     {
-        _sender = sender;
+        _dispatcher = dispatcher;
     }
 
     public Task ExecuteAsync(string triggeredBy, CancellationToken cancellationToken = default)
     {
-        return _sender.Send(new MonitoringBusinessUseCase.ExecuteCommand(triggeredBy), cancellationToken);
+        return _dispatcher.Send(new MonitoringBusinessUseCase.ExecuteCommand(triggeredBy), cancellationToken);
     }
 }

@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using DddStarter.Application.Contracts.Ports;
-using MediatR;
+using DddStarter.Dispatching.Contracts;
 
 namespace DddStarter.Application.Behaviors;
 
 public sealed class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : notnull
+    where TRequest : notnull, IRequest<TResponse>
 {
     private readonly IEnumerable<IRequestValidator<TRequest>> _validators;
 

@@ -4,7 +4,7 @@
 - `BUILD001`: lint is build-gated; repositories must compile before rule evaluation is trusted.
 - `DEP001`: domain must not depend on application/infrastructure/bootstrap/controller.
 - `DEP002`: application contracts must not depend on infrastructure/bootstrap/controller.
-- `MEDIATR001~002`: MediatR usage is limited to approved scope (application/controller allowed, domain/infrastructure forbidden).
+- `MEDIATR001~002`: MediatR usage remains forbidden outside approved scope when present.
 - `DIP001`: constructor dependencies in target layers should depend on interfaces (DIP), not concrete classes.
 - `MOCK001`: contract/abstraction interfaces must have at least one mock/fake/stub implementation in approved paths.
 
@@ -38,9 +38,9 @@
 - `PURE001` (optional): handlers must not mutate inbound request records.
 
 ## Workflow and Controller Boundaries
-- `FLOW001`: workflow constructors may only depend on `ISender`.
-- `FLOW002`: workflow methods must not call injected dependencies except `_sender.Send(...)`.
-- `FLOW003`: handlers must not dispatch nested MediatR requests or depend on mediator sender/publisher abstractions.
+- `FLOW001`: workflow constructors may only depend on `IDispatcher`.
+- `FLOW002`: workflow methods must not call injected dependencies except `_dispatcher.Send(...)`.
+- `FLOW003`: handlers must not dispatch nested requests or depend on dispatcher/mediator abstractions.
 - `CTRL001`: controller constructors must stay in workflow/framework dependency scope.
 
 ## Files

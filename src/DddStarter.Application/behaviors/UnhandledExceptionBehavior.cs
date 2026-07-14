@@ -1,10 +1,10 @@
 using DddStarter.Application.Contracts.Ports;
-using MediatR;
+using DddStarter.Dispatching.Contracts;
 
 namespace DddStarter.Application.Behaviors;
 
 public sealed class UnhandledExceptionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : notnull
+    where TRequest : notnull, IRequest<TResponse>
 {
     private readonly IAppLogger _logger;
 

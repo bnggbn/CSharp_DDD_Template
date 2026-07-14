@@ -18,9 +18,9 @@ Generated from policy: src/GenericDddLinter/linter.policy.sample.json.
 | DEP002 | Application contracts must not depend on infrastructure/bootstrap/controller namespaces. |
 | DIP001 | Constructor dependencies in target layers must prefer interfaces, except approved configuration-style concrete types. |
 | FILE001 | File name should match the primary declared type. |
-| FLOW001 | Workflow constructors may only depend on ISender. |
-| FLOW002 | Workflow methods may not call injected dependencies other than '_sender.Send(...)'. |
-| FLOW003 | Handlers must not orchestrate by depending on mediator sender/publisher or dispatching nested requests. |
+| FLOW001 | Workflow constructors may only depend on IDispatcher. |
+| FLOW002 | Workflow methods may not call injected dependencies other than '_dispatcher.Send(...)'. |
+| FLOW003 | Handlers must not orchestrate by depending on dispatcher/mediator abstractions or dispatching nested requests. |
 | IMM001 | Command/query records must remain immutable: init-only properties and readonly fields only. |
 | INFC001 | Infrastructure constants classes should end with 'Constants'. |
 | INFH001 | Infrastructure helper classes should end with 'Helper'. |

@@ -27,9 +27,9 @@
     "CQRS102": "Use-case files must be '*UseCase.cs' and contain only record command/query members.",
     "CQRS103": "Command/query records must not use custom inheritance; only approved request interfaces are allowed.",
     "IMM001": "Command/query records must remain immutable: init-only properties and readonly fields only.",
-    "FLOW001": "Workflow constructors may only depend on ISender.",
-    "FLOW002": "Workflow methods may not call injected dependencies other than '_sender.Send(...)'.",
-    "FLOW003": "Handlers must not orchestrate by depending on mediator sender/publisher or dispatching nested requests.",
+    "FLOW001": "Workflow constructors may only depend on IDispatcher.",
+    "FLOW002": "Workflow methods may not call injected dependencies other than '_dispatcher.Send(...)'.",
+    "FLOW003": "Handlers must not orchestrate by depending on dispatcher/mediator abstractions or dispatching nested requests.",
     "CTRL001": "Controller constructors must stay in workflow/framework dependency scope.",
     "SEV001": "SetSeverity mutation is restricted to approved paths.",
     "DIP001": "Constructor dependencies in target layers must prefer interfaces, except approved configuration-style concrete types.",
@@ -206,7 +206,7 @@
     "enabled": true,
     "workflowsPathContains": "/application/workflows/",
     "allowedDependencyTypeNames": [
-      "ISender"
+      "IDispatcher"
     ]
   },
   "workflowDispatchRule": {
@@ -223,6 +223,7 @@
     "enabled": true,
     "handlersPathContains": "/application/handlers/",
     "forbiddenDependencyTypeNames": [
+      "IDispatcher",
       "ISender",
       "IMediator",
       "IPublisher"

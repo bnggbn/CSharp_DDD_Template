@@ -8,10 +8,10 @@ DDD/CQRS starter template with a policy-driven architecture linter.
 - Keep request flow predictable: `use-cases` defines request records, handlers execute logic, workflows dispatch.
 
 ## Add One Flow (Recipe)
-1. Define request records in `src/DddStarter.Application/use-cases/*BusinessUseCase.cs`.
+1. Define request records in `src/DddStarter.Application/use-cases/*UseCase.cs`.
 2. Implement handler logic in `src/DddStarter.Application/handlers/`.
 3. Add validators in `src/DddStarter.Application/validators/` when needed.
-4. Dispatch from `src/DddStarter.Application/workflows/` via `_sender.Send(new Request(...), ct)`.
+4. Dispatch from `src/DddStarter.Application/workflows/` via `_dispatcher.Send(new Request(...), ct)`.
 5. Run linter and build.
 
 ## Sample Slice (Clone This)

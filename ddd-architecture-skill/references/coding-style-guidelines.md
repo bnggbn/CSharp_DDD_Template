@@ -8,15 +8,15 @@
 - Use `Verb + Noun + Async` for repository method names.
 - Use `Verb + Noun + Command/Query` for command/query names.
 - Use `record` for commands and queries; do not use inheritance for them.
-- Place command/query records under `application/use-cases/*UseCase.cs` inside `*BusinessUseCase` containers.
+- Place command/query records under `application/use-cases/*UseCase.cs` inside `*UseCase` containers.
 
 ## Command Dispatch Pattern
-- Keep workflow dispatch-only: create request with `new` and call `_sender.Send(request, ct)`.
-- Workflow constructors should only depend on `ISender`.
+- Keep workflow dispatch-only: create request with `new` and call `_dispatcher.Send(request, ct)`.
+- Workflow constructors should only depend on `IDispatcher`.
 - Do not place execution logic in workflow classes.
-- Do not call injected dependencies from workflow classes except `_sender.Send(...)`.
+- Do not call injected dependencies from workflow classes except `_dispatcher.Send(...)`.
 - Put execution logic in handlers.
-- Handlers should not dispatch nested MediatR requests.
+- Handlers should not dispatch nested requests through dispatcher or mediator-style abstractions.
 - Controllers should depend on workflows for application orchestration rather than handlers or repositories.
 
 ## Data Access Safety

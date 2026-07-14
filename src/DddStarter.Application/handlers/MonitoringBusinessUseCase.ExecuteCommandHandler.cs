@@ -1,8 +1,8 @@
 using DddStarter.Application.Contracts.Ports;
+using DddStarter.Dispatching.Contracts;
 using DddStarter.Domain.Enums;
 using DddStarter.Domain.Services;
 using DddStarter.Domain.ValueObjects;
-using MediatR;
 
 namespace DddStarter.Application.UseCases.Commands;
 

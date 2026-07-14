@@ -8,10 +8,10 @@
   YourProject.Application/
     contracts/
       ports/              # only interfaces the application actually calls (logger, validators, repositories)
-    use-cases/            # *BusinessUseCase.cs: nested Command/Query records only
+    use-cases/            # *UseCase.cs: nested Command/Query records only
     handlers/             # orchestrate: call domain service, then log/persist from the result
     validators/
-    workflows/            # dispatch-only via ISender
+    workflows/            # dispatch-only via IDispatcher
     behaviors/            # cross-cutting: validation, logging, exception handling
   YourProject.Infrastructure/
     configuration/
