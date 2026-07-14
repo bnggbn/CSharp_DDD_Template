@@ -9,14 +9,14 @@ Generated from policy: src/GenericDddLinter/linter.policy.sample.json.
 | CFG001 | Config override assignment is restricted to approved paths. |
 | CFG002 | Settings file write is restricted to approved paths. |
 | CONST001 | Constants classes may only contain const or static readonly fields. |
-| CQRS100 | Command records must be nested in '*BusinessUseCase' under application/use-cases. |
-| CQRS101 | Query records must be nested in '*BusinessUseCase' under application/use-cases. |
+| CQRS100 | Command records must be nested in '*UseCase' under application/use-cases. |
+| CQRS101 | Query records must be nested in '*UseCase' under application/use-cases. |
 | CQRS102 | Use-case files must be '*UseCase.cs' and contain only record command/query members. |
 | CQRS103 | Command/query records must not use custom inheritance; only approved request interfaces are allowed. |
 | CTRL001 | Controller constructors must stay in workflow/framework dependency scope. |
 | DEP001 | Domain layer must not depend on application/infrastructure/bootstrap/controller namespaces. |
 | DEP002 | Application contracts must not depend on infrastructure/bootstrap/controller namespaces. |
-| DIP001 | Constructor dependencies in target layers must prefer interfaces. |
+| DIP001 | Constructor dependencies in target layers must prefer interfaces, except approved configuration-style concrete types. |
 | FILE001 | File name should match the primary declared type. |
 | FLOW001 | Workflow constructors may only depend on ISender. |
 | FLOW002 | Workflow methods may not call injected dependencies other than '_sender.Send(...)'. |

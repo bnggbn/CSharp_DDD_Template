@@ -2,11 +2,12 @@
   "requireAsciiPath": true,
   "ruleDescriptions": {
     "PATH006": "Classes matching '*Service' must be placed under '/domain/services/' (pure domain services).",
-    "CQRS100": "Command records must be nested in '*BusinessUseCase' under application/use-cases.",
-    "CQRS101": "Query records must be nested in '*BusinessUseCase' under application/use-cases.",
+    "CQRS100": "Command records must be nested in '*UseCase' under application/use-cases.",
+    "CQRS101": "Query records must be nested in '*UseCase' under application/use-cases.",
     "CQRS102": "Use-case files must be '*UseCase.cs' and contain only record command/query members.",
     "CQRS103": "Command/query records must not use custom inheritance; only approved request interfaces are allowed.",
     "IMM001": "Command/query records must remain immutable: init-only properties and readonly fields only.",
+    "DIP001": "Constructor dependencies in target layers should depend on interfaces (DIP), except approved configuration-style concrete types.",
     "FLOW001": "Workflow constructors may only depend on ISender.",
     "FLOW002": "Workflow methods are dispatch-only: they may only create command/query requests and call ISender.Send(...).",
     "FLOW003": "Handlers must not orchestrate by depending on mediator sender/publisher or dispatching nested requests.",
@@ -116,6 +117,19 @@
     ],
     "allowedDependencySuffixes": [
       "Workflow"
+    ]
+  },
+  "constructorInterfaceRule": {
+    "ruleId": "DIP001",
+    "enabled": true,
+    "targetPathContains": [
+      "/application/use-cases/",
+      "/bootstrap/"
+    ],
+    "allowedConcreteTypeSuffixes": [
+      "Settings",
+      "Options",
+      "Cfg"
     ]
   }
 }

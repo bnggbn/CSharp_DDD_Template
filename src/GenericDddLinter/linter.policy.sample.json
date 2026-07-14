@@ -22,8 +22,8 @@
     "MEDIATR002": "MediatR usage is forbidden in the infrastructure layer.",
     "CFG001": "Config override assignment is restricted to approved paths.",
     "CFG002": "Settings file write is restricted to approved paths.",
-    "CQRS100": "Command records must be nested in '*BusinessUseCase' under application/use-cases.",
-    "CQRS101": "Query records must be nested in '*BusinessUseCase' under application/use-cases.",
+    "CQRS100": "Command records must be nested in '*UseCase' under application/use-cases.",
+    "CQRS101": "Query records must be nested in '*UseCase' under application/use-cases.",
     "CQRS102": "Use-case files must be '*UseCase.cs' and contain only record command/query members.",
     "CQRS103": "Command/query records must not use custom inheritance; only approved request interfaces are allowed.",
     "IMM001": "Command/query records must remain immutable: init-only properties and readonly fields only.",
@@ -32,7 +32,7 @@
     "FLOW003": "Handlers must not orchestrate by depending on mediator sender/publisher or dispatching nested requests.",
     "CTRL001": "Controller constructors must stay in workflow/framework dependency scope.",
     "SEV001": "SetSeverity mutation is restricted to approved paths.",
-    "DIP001": "Constructor dependencies in target layers must prefer interfaces.",
+    "DIP001": "Constructor dependencies in target layers must prefer interfaces, except approved configuration-style concrete types.",
     "MOCK001": "Key interfaces must have at least one mock/fake/stub implementation.",
     "CONST001": "Constants classes may only contain const or static readonly fields."
   },
@@ -260,6 +260,11 @@
     "targetPathContains": [
       "/application/use-cases/",
       "/bootstrap/"
+    ],
+    "allowedConcreteTypeSuffixes": [
+      "Settings",
+      "Options",
+      "Cfg"
     ]
   },
   "interfaceMockRule": {

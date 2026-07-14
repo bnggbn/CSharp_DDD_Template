@@ -142,15 +142,15 @@ internal static class RoslynRuleRunner
 
     private static void CheckCqrsCommandFileRules(LinterPolicy policy, List<string> files, List<string> issues)
     {
-        ValidateRequestFileRule(files, issues, policy.CqrsCommandFileRule.RuleId, policy.CqrsCommandFileRule.CommandsPathContains, "Command", requireBusinessUseCaseContainer: true);
+        ValidateRequestFileRule(files, issues, policy.CqrsCommandFileRule.RuleId, policy.CqrsCommandFileRule.CommandsPathContains, "Command", requireUseCaseContainer: true);
     }
 
     private static void CheckCqrsQueryFileRules(LinterPolicy policy, List<string> files, List<string> issues)
     {
-        ValidateRequestFileRule(files, issues, policy.CqrsQueryFileRule.RuleId, policy.CqrsQueryFileRule.QueriesPathContains, "Query", requireBusinessUseCaseContainer: true);
+        ValidateRequestFileRule(files, issues, policy.CqrsQueryFileRule.RuleId, policy.CqrsQueryFileRule.QueriesPathContains, "Query", requireUseCaseContainer: true);
     }
 
-    private static void ValidateRequestFileRule(List<string> files, List<string> issues, string ruleId, string pathContains, string requestSuffix, bool requireBusinessUseCaseContainer)
+    private static void ValidateRequestFileRule(List<string> files, List<string> issues, string ruleId, string pathContains, string requestSuffix, bool requireUseCaseContainer)
     {
         foreach (string file in files)
         {
@@ -179,16 +179,16 @@ internal static class RoslynRuleRunner
                     issues.Add($"[{ruleId}] {rel}: '{requestType.Identifier.Text}' must be declared under '{pathContains}'.");
                 }
 
-                if (requireBusinessUseCaseContainer)
+                if (requireUseCaseContainer)
                 {
                     ClassDeclarationSyntax? parentClass = requestType.Parent as ClassDeclarationSyntax;
-                    bool isInsideBusinessUseCase =
+                    bool isInsideUseCase =
                         parentClass != null &&
-                        parentClass.Identifier.Text.EndsWith("BusinessUseCase", StringComparison.Ordinal);
+                        parentClass.Identifier.Text.EndsWith("UseCase", StringComparison.Ordinal);
 
-                    if (!isInsideBusinessUseCase)
+                    if (!isInsideUseCase)
                     {
-                        issues.Add($"[{ruleId}] {rel}: '{requestType.Identifier.Text}' must be nested inside '*BusinessUseCase'.");
+                        issues.Add($"[{ruleId}] {rel}: '{requestType.Identifier.Text}' must be nested inside '*UseCase'.");
                     }
                 }
             }
@@ -499,7 +499,7 @@ internal static class RoslynRuleRunner
                     }
 
                     ITypeSymbol? parameterType = semanticModel.GetTypeInfo(parameter.Type).Type;
-                    if (parameterType == null || IsAllowedConstructorDependency(parameterType))
+                    if (parameterType == null || IsAllowedConstructorDependency(parameterType, policy.ConstructorInterfaceRule))
                     {
                         continue;
                     }
@@ -567,6 +567,17 @@ internal static class RoslynRuleRunner
             "CancellationToken" or "IServiceProvider" => true,
             _ => false
         };
+    }
+
+    private static bool IsAllowedConstructorDependency(ITypeSymbol parameterType, ConstructorInterfaceRule rule)
+    {
+        if (IsAllowedNonInterfaceType(parameterType.Name))
+        {
+            return true;
+        }
+
+        return rule.AllowedConcreteTypeSuffixes.Any(suffix =>
+            parameterType.Name.EndsWith(suffix, StringComparison.Ordinal));
     }
 
     private static void CheckConstantsClassRule(LinterPolicy policy, List<string> files, List<string> issues)

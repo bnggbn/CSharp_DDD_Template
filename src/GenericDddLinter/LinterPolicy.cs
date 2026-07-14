@@ -159,6 +159,7 @@ internal sealed class ConstructorInterfaceRule
     public string RuleId { get; set; } = "DIP001";
     public bool Enabled { get; set; } = true;
     public List<string> TargetPathContains { get; set; } = new();
+    public List<string> AllowedConcreteTypeSuffixes { get; set; } = new();
 }
 
 internal sealed class InterfaceMockRule
